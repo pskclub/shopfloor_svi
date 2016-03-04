@@ -2,6 +2,7 @@ package th.co.svi.shopfloor.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -12,7 +13,6 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import th.co.svi.shopfloor.LoginActivity;
 import th.co.svi.shopfloor.R;
@@ -24,6 +24,8 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private CoordinatorLayout coordinatorLayout;
+    SharedPreferences Login;
+    SharedPreferences.Editor LoginEditor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +74,10 @@ public class MainActivity extends AppCompatActivity {
             builder.setMessage("Are you sure you want to sign out ?");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    //คลิกใช่ ออกจากโปรแกรม
+                    Login = getSharedPreferences("MEMBER", MODE_PRIVATE);
+                    LoginEditor = Login.edit();
+                    LoginEditor.putBoolean("login", false);
+                    LoginEditor.commit();
                     Intent i = new Intent(MainActivity.this, LoginActivity.class);
                     startActivity(i);
                     finish();
