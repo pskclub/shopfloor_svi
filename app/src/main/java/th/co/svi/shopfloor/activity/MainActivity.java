@@ -2,9 +2,7 @@ package th.co.svi.shopfloor.activity;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.design.widget.CoordinatorLayout;
-import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
@@ -18,14 +16,13 @@ import th.co.svi.shopfloor.LoginActivity;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.adapter.ViewPagerAdapter;
 import th.co.svi.shopfloor.fragment.MainFragmain;
+import th.co.svi.shopfloor.manager.ShareData;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private CoordinatorLayout coordinatorLayout;
-    SharedPreferences Login;
-    SharedPreferences.Editor LoginEditor;
+    ShareData shareMember;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,10 +50,10 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         tabLayout = (TabLayout) findViewById(R.id.tabs);
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
         setSupportActionBar(toolbar);
         setupViewPager(viewPager);
         tabLayout.setupWithViewPager(viewPager);
+        shareMember = new ShareData("MEMBER");
     }
 
     @Override
@@ -70,14 +67,11 @@ public class MainActivity extends AppCompatActivity {
         if (item.getItemId() == R.id.action_logout) {
             AlertDialog.Builder builder =
                     new AlertDialog.Builder(MainActivity.this, R.style.AppCompatAlertDialogStyle);
-            builder.setTitle("Confirm!");
+            builder.setTitle(R.string.confirm);
             builder.setMessage("Are you sure you want to sign out ?");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
-                    Login = getSharedPreferences("MEMBER", MODE_PRIVATE);
-                    LoginEditor = Login.edit();
-                    LoginEditor.putBoolean("login", false);
-                    LoginEditor.commit();
+                    shareMember.setMember(false, shareMember.getUsername(), "");
                     Intent i = new Intent(MainActivity.this, LoginActivity.class);
                     startActivity(i);
                     finish();

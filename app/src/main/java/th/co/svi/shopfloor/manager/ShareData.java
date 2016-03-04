@@ -10,7 +10,9 @@ public class ShareData {
     SharedPreferences.Editor member_editer;
 
     public ShareData(String name){
-        member = Contextor.getInstance().getContext().getSharedPreferences(name,Contextor.getInstance().getContext().MODE_PRIVATE);
+        member = Contextor.getInstance().getContext().getSharedPreferences(name,
+                Contextor.getInstance().getContext().MODE_PRIVATE);
+        member_editer = member.edit();
     }
 
     public void setMember(boolean status, String username, String user_id) {
@@ -25,7 +27,7 @@ public class ShareData {
     }
 
     public String getUsername() {
-        return member.getString("login", "");
+        return member.getString("username", "");
     }
 
     public String getUserID() {

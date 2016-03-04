@@ -6,13 +6,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by MIS_Student5 on 17/2/2559.
  */
 public class SelectDB {
-    List<Integer> list;
+    List<Integer> listData;
     final int FAIL = 0;
     final int SUCCESS = 1;
     final int ERR = -1;
@@ -21,11 +22,12 @@ public class SelectDB {
 
     public SelectDB() {
         ConnectionClass = new ConnectionDB();
+        listData = new ArrayList<>();
     }
 
     public List<Integer> checkLogin(String username, String password) {
         ResultSet result = null;
-        list.add(0, FAIL);
+        listData.add(0, FAIL);
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
@@ -35,8 +37,8 @@ public class SelectDB {
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
-                list.add(0, ERR);
-                return list;
+                listData.add(0, ERR);
+                return listData;
             }
         } catch (SQLException e) {
             Log.e("DbSelErr", e.getMessage());
@@ -45,14 +47,14 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
-                list.add(0, SUCCESS);
-                list.add(1, result.getInt("id_employee"));
-                return list;
+                listData.add(0, SUCCESS);
+                listData.add(1, result.getInt("id_employee"));
+                return listData;
             }
         } catch (SQLException e) {
             Log.e("DbSelErr", e.getMessage());
         }
-        return list;
+        return listData;
     }
 
 }

@@ -39,8 +39,6 @@ public class LoginActivity extends AppCompatActivity {
     private Button SignInButton;
     String username;
     String password;
-    SharedPreferences Login;
-    SharedPreferences.Editor LoginEditor;
     View focusView;
     ShareData shareMember;
 
@@ -66,8 +64,10 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         } else {
             txtUsername.setText(shareMember.getUsername());
-            focusView = txtPassword;
-            focusView.requestFocus();
+            if (!shareMember.getUsername().equals("")) {
+                focusView = txtPassword;
+                focusView.requestFocus();
+            }
         }
 
     }
@@ -208,7 +208,6 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected Boolean doInBackground(Void... params) {
-
             SelectDB checkLogin = new SelectDB();
             List<Integer> result;
             try {
