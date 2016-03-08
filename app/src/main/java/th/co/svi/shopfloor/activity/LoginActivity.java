@@ -1,12 +1,8 @@
-package th.co.svi.shopfloor;
+package th.co.svi.shopfloor.activity;
 
-
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.AsyncTask;
@@ -22,7 +18,7 @@ import android.widget.TextView;
 
 import java.util.List;
 
-import th.co.svi.shopfloor.activity.MainActivity;
+import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
@@ -64,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         } else {
             txtUsername.setText(shareMember.getUsername());
-            if (!shareMember.getUsername().equals("")) {
+            if (!shareMember.getUsername().equals(null)) {
                 focusView = txtPassword;
                 focusView.requestFocus();
             }
@@ -125,7 +121,6 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        mAuthTask.cancel(false);
         AlertDialog.Builder builder =
                 new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
         builder.setTitle(getString(R.string.confirm));
@@ -148,7 +143,10 @@ public class LoginActivity extends AppCompatActivity {
     TextView.OnEditorActionListener textViewEditerListener = new TextView.OnEditorActionListener() {
         @Override
         public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
-            if (id == R.id.password || id == EditorInfo.IME_ACTION_DONE) {
+            if (id == EditorInfo.IME_ACTION_SEARCH ||
+                    id == EditorInfo.IME_ACTION_DONE ||
+                    keyEvent.getAction() == KeyEvent.ACTION_DOWN &&
+                            keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
                 attemptLogin();
                 return true;
             }
@@ -192,9 +190,9 @@ public class LoginActivity extends AppCompatActivity {
      **********************/
 
     private class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-        final int FAIL = 0;
-        final int SUCCESS = 1;
-        final int ERR = -1;
+        final String FAIL = "0";
+        final String SUCCESS = "1";
+        final String ERR = "-1";
         private final String mEmail;
         private final String mPassword;
         private int setERR = 0;
@@ -209,14 +207,14 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
             SelectDB checkLogin = new SelectDB();
-            List<Integer> result;
+            List<String> result;
             try {
                 Thread.sleep(400);
                 result = checkLogin.checkLogin(mEmail, mPassword);
-                if (result.get(0) == SUCCESS) {
-                    shareMember.setMember(true, username, result.get(1).toString());
+                if (result.get(0).equals(SUCCESS)) {
+                    shareMember.setMember(true, username, result.get(1).toString(),result.get(2).toString());
                     return true;
-                } else if (result.get(0) == ERR) {
+                } else if (result.get(0).equals(ERR)) {
                     this.setERR = 1;
                     return false;
                 } else {

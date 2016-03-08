@@ -9,16 +9,17 @@ public class ShareData {
     SharedPreferences member;
     SharedPreferences.Editor member_editer;
 
-    public ShareData(String name){
+    public ShareData(String name) {
         member = Contextor.getInstance().getContext().getSharedPreferences(name,
                 Contextor.getInstance().getContext().MODE_PRIVATE);
         member_editer = member.edit();
     }
 
-    public void setMember(boolean status, String username, String user_id) {
+    public void setMember(boolean status, String username, String user_id, String user_route) {
         member_editer.putBoolean("login", status);
         member_editer.putString("username", username);
         member_editer.putString("user_id", user_id);
+        member_editer.putString("user_route", user_route);
         member_editer.commit();
     }
 
@@ -27,10 +28,14 @@ public class ShareData {
     }
 
     public String getUsername() {
-        return member.getString("username", "");
+        return member.getString("username", null);
     }
 
     public String getUserID() {
-        return member.getString("user_id", "");
+        return member.getString("user_id", null);
+    }
+
+    public String getUserRoute() {
+        return member.getString("user_route", null);
     }
 }
