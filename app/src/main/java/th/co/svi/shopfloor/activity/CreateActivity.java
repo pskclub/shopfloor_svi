@@ -16,11 +16,19 @@ public class CreateActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
         initInstances();
-
+        if(savedInstanceState == null){
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.contentContainer, CreateFragment.newInstance())
+                    .commit();
+        }
     }
 
     private void initInstances() {
-
+        shareMember = new ShareData("MEMBER");
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        toolbar.setNavigationIcon(R.mipmap.ic_launcher);
+        toolbar.setTitle("Start Job");
+        setSupportActionBar(toolbar);
     }
 
 }
