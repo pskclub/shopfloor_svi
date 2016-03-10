@@ -4,28 +4,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <GridView
-            android:id="@+id/gvPlan"
-            android:paddingTop="8dp"
+        <TextView
+            android:id="@+id/tvErr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="80dp"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:gravity="center"
+            android:text="Loading..."
+            android:textSize="14sp"
+            android:textColor="#95a5a6"
+            android:visibility="visible" />
+
+        <android.support.v4.widget.SwipeRefreshLayout
+            android:id="@+id/swipeRefreshLayout"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:columnWidth="300dp"
-            android:gravity="center"
-            android:numColumns="auto_fit"
-            android:stretchMode="columnWidth"></GridView>
-    </LinearLayout>
+            android:backgroundTint="@color/colorPrimary"
+            >
 
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_add_white_36dp"
-        app:backgroundTint="@color/colorPrimary" />
+            <GridView
+                android:id="@+id/gvPlan"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:columnWidth="300dp"
+                android:gravity="center"
+                android:numColumns="auto_fit"
+                android:paddingTop="8dp"
+                android:stretchMode="columnWidth"></GridView>
+        </android.support.v4.widget.SwipeRefreshLayout>
+
+
+    </RelativeLayout>
+
 </android.support.design.widget.CoordinatorLayout>

@@ -1,6 +1,5 @@
 package th.co.svi.shopfloor.manager;
 
-import android.text.format.DateFormat;
 import android.util.Log;
 
 import java.sql.Connection;
@@ -8,10 +7,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by MIS_Student5 on 17/2/2559.
@@ -62,12 +59,13 @@ public class SelectDB {
         return listData;
     }
 
-    public List<HashMap<String, String>> plan(String USER_ROUTE,String DatePlan,String DateTo) {
+    public List<HashMap<String, String>> plan(String USER_ROUTE, String DatePlan, String DateTo) {
         ResultSet result = null;
-        List<HashMap<String, String>> listData = new ArrayList<>();
+        List<HashMap<String, String>> listData = null;
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
+                listData = new ArrayList<>();
                 query = "SELECT DISTINCT pl.Work_Order,pl.Plant,pl.Qty_Order,ISNULL(shop.Status,1) AS Status " +
                         "FROM Planning_Master AS pl LEFT OUTER JOIN MOBILE_Shopfloor_Master AS shop " +
                         "ON pl.Work_Order = shop.QR_CODE AND shop.WorkCenter LIKE '" + USER_ROUTE + "%' " +
@@ -95,6 +93,46 @@ public class SelectDB {
                     planning.put("Qty_Order", result.getString("Qty_Order"));
                     planning.put("Plant", result.getString("Plant"));
                     planning.put("Status", result.getString("Status"));
+                    listData.add(planning);
+                } while (result.next());
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+
+        return listData;
+    }
+
+    public List<HashMap<String, String>> pending(String USER_ROUTE) {
+        ResultSet result = null;
+        List<HashMap<String, String>> listData = null;
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = new ArrayList<>();
+                query = "SELECT QR_CODE,Route_Operation,WorkCenter,WorkOrder,CAST(Qty_WO AS int) " +
+                        "AS Qty_WO,Status,Close_JobDate,Regis_by,Regis_Date,Update_by,Update_Date " +
+                        "FROM MOBILE_Shopfloor_Master  WHERE Status = '0'  AND WorkCenter LIKE '" + USER_ROUTE +
+                        "%' ORDER BY QR_CODE";
+
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                do {
+                    HashMap<String, String> planning = new HashMap<>();
+                    planning.put("QR_CODE", result.getString("QR_CODE"));
+                    planning.put("WorkCenter", result.getString("WorkCenter"));
+                    planning.put("Qty_WO", result.getString("Qty_WO"));
                     listData.add(planning);
                 } while (result.next());
                 return listData;

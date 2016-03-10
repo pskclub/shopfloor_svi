@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.text.format.DateFormat;
 import android.view.LayoutInflater;
@@ -19,9 +20,9 @@ import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -30,7 +31,8 @@ import th.co.svi.shopfloor.activity.MainActivity;
 import th.co.svi.shopfloor.adapter.JobPlanListAdapter;
 import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
-import th.co.svi.shopfloor.view.JobPlanListItem;
+
+import static android.support.v4.app.ActivityCompat.invalidateOptionsMenu;
 
 
 /**
@@ -38,12 +40,15 @@ import th.co.svi.shopfloor.view.JobPlanListItem;
  */
 public class MainFragmain extends Fragment {
     private GridView gvPlan;
+    private TextView tvErr;
     String txtDate = null;
     String txtDateTo = null;
+    private int mYear = 0, mMonth = 0, mDay = 0;
     private JobPlanListAdapter planAdapter = null;
     private List<HashMap<String, String>> planList = null;
     private ShareData member;
     private PlanTask loadPlanAsync;
+    SwipeRefreshLayout layoutRefresh;
 
     public MainFragmain() {
         super();
@@ -77,13 +82,13 @@ public class MainFragmain extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         initInstances(rootView, savedInstanceState);
         loadPlan();
+        layoutRefresh.setOnRefreshListener(onRefreshListener);
         return rootView;
     }
 
     private void loadPlan() {
         loadPlanAsync = new PlanTask();
         loadPlanAsync.execute((Void) null);
-
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -97,7 +102,10 @@ public class MainFragmain extends Fragment {
         // Note: State of variable initialized here could not be saved
         //       in onSavedInstanceState
         gvPlan = (GridView) rootView.findViewById(R.id.gvPlan);
-      }
+        tvErr = (TextView) rootView.findViewById(R.id.tvErr);
+        layoutRefresh = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
+        layoutRefresh.setColorSchemeResources(R.color.colorPrimary);
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -120,17 +128,28 @@ public class MainFragmain extends Fragment {
     }
 
     /**********************
-     * innerClass Zone
+     * Listener Zone
      **********************/
+    SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
+        @Override
+        public void onRefresh() {
+            loadPlan();
+        }
+    };
+
     public class SelectDateFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             final Calendar calendar = Calendar.getInstance();
-            int yy = calendar.get(Calendar.YEAR);
-            int mm = calendar.get(Calendar.MONTH);
-            int dd = calendar.get(Calendar.DAY_OF_MONTH);
-            return new DatePickerDialog(getActivity(), this, yy, mm, dd);
+            if (mYear == 0) {
+                return new DatePickerDialog(getActivity(), this, calendar.get(Calendar.YEAR),
+                        calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH));
+            } else {
+                return new DatePickerDialog(getActivity(), this, mYear,
+                        mMonth, mDay);
+            }
+
         }
 
         public void onDateSet(DatePicker view, int yy, int mm, int dd) {
@@ -138,8 +157,16 @@ public class MainFragmain extends Fragment {
         }
 
         public void populateSetDate(int year, int month, int day) {
+            String m = (month < 10 ? "0" : "") + month;
+            String d = (day < 10 ? "0" : "") + day;
             txtDate = (year + "-" + month + "-" + day);
-            txtDateTo = (year + "-" + month + "-" + (day+1));
+            txtDateTo = (year + "-" + month + "-" + (day + 1));
+            txtDate = (year + "-" + m + "-" + d);
+            MainActivity.txtDate = txtDate;
+            mDay = day;
+            mMonth = month - 1;
+            mYear = year;
+            invalidateOptionsMenu(getActivity());
             loadPlan();
         }
 
@@ -160,13 +187,22 @@ public class MainFragmain extends Fragment {
         }
 
         @Override
-        protected void onPostExecute(final Boolean success) {
+        protected void onPostExecute(Boolean success) {
             loadPlanAsync = null;
-
+            layoutRefresh.setRefreshing(false);
             if (success) {
-                planAdapter = new JobPlanListAdapter(planList);
-                gvPlan.setAdapter(planAdapter);
+                if (planList.size() == 0) {
+                    tvErr.setText("NO DATA \n" + MainActivity.txtDate);
+                    tvErr.setVisibility(View.VISIBLE);
+                    planAdapter = new JobPlanListAdapter(planList);
+                    gvPlan.setAdapter(planAdapter);
+                } else {
+                    tvErr.setVisibility(View.GONE);
+                    planAdapter = new JobPlanListAdapter(planList);
+                    gvPlan.setAdapter(planAdapter);
+                }
             } else {
+                tvErr.setText(R.string.server_fail);
                 Toast.makeText(getContext(), R.string.server_fail, Toast.LENGTH_SHORT).show();
             }
         }

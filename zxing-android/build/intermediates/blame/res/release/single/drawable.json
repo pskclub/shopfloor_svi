@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "C:\\Users\\MIS_STUDENT5\\Desktop\\PskCluB\\ShopFloor\\zxing-android\\build\\intermediates\\res\\merged\\release\\drawable\\share_via_barcode.png",
+        "source": "C:\\Users\\MIS_STUDENT5\\Desktop\\PskCluB\\ShopFloor\\zxing-android\\src\\main\\res\\drawable\\share_via_barcode.png"
+    },
+    {
+        "merged": "C:\\Users\\MIS_STUDENT5\\Desktop\\zxingfragmentlib\\zxing-android\\build\\intermediates\\res\\merged\\release\\drawable\\share_via_barcode.png",
+        "source": "C:\\Users\\MIS_STUDENT5\\Desktop\\zxingfragmentlib\\zxing-android\\src\\main\\res\\drawable\\share_via_barcode.png"
+    },
+    {
+        "merged": "C:\\Users\\MIS_STUDENT5\\Desktop\\zxingfragmentlib\\zxing-android\\build\\intermediates\\res\\merged\\release\\drawable\\launcher_icon.png",
+        "source": "C:\\Users\\MIS_STUDENT5\\Desktop\\zxingfragmentlib\\zxing-android\\src\\main\\res\\drawable\\launcher_icon.png"
+    },
+    {
+        "merged": "C:\\Users\\MIS_STUDENT5\\Desktop\\PskCluB\\ShopFloor\\zxing-android\\build\\intermediates\\res\\merged\\release\\drawable\\launcher_icon.png",
+        "source": "C:\\Users\\MIS_STUDENT5\\Desktop\\PskCluB\\ShopFloor\\zxing-android\\src\\main\\res\\drawable\\launcher_icon.png"
+    }
+]

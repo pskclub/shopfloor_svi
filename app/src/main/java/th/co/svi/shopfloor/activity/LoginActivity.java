@@ -28,6 +28,7 @@ public class LoginActivity extends AppCompatActivity {
     /**********************
      * variable Zone
      **********************/
+
     private UserLoginTask mAuthTask = null;
     private EditText txtUsername;
     private EditText txtPassword;
@@ -60,7 +61,7 @@ public class LoginActivity extends AppCompatActivity {
             finish();
         } else {
             txtUsername.setText(shareMember.getUsername());
-            if (!shareMember.getUsername().equals(null)) {
+            if (!(shareMember.getUsername() == null)) {
                 focusView = txtPassword;
                 focusView.requestFocus();
             }
@@ -136,6 +137,15 @@ public class LoginActivity extends AppCompatActivity {
         builder.show();
     }
 
+   /* @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 7) {
+            txtUsername.setText(data.getStringExtra("data"));
+        }
+    }*/
+
     /**********************
      * Listenner Zone
      **********************/
@@ -185,6 +195,8 @@ public class LoginActivity extends AppCompatActivity {
         }
     };
 
+
+
     /**********************
      * innerClass Zone
      **********************/
@@ -212,7 +224,7 @@ public class LoginActivity extends AppCompatActivity {
                 Thread.sleep(400);
                 result = checkLogin.checkLogin(mEmail, mPassword);
                 if (result.get(0).equals(SUCCESS)) {
-                    shareMember.setMember(true, username, result.get(1).toString(),result.get(2).toString());
+                    shareMember.setMember(true, username, result.get(1).toString(), result.get(2).toString());
                     return true;
                 } else if (result.get(0).equals(ERR)) {
                     this.setERR = 1;
