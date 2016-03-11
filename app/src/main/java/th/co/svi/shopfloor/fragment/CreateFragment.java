@@ -1,19 +1,48 @@
 package th.co.svi.shopfloor.fragment;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.sql.SQLException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 
 import th.co.svi.shopfloor.R;
+import th.co.svi.shopfloor.activity.QrCodeActivity;
+import th.co.svi.shopfloor.manager.InsertDB;
+import th.co.svi.shopfloor.manager.SelectDB;
+import th.co.svi.shopfloor.manager.ShareData;
 
 
 /**
  * Created by nuuneoi on 11/16/2014.
  */
 public class CreateFragment extends Fragment {
+    private EditText txtID;
+    private ImageButton btnSearch;
+    private FloatingActionButton fabQrcode;
+    private CardView cardContent;
+    private ShareData member;
+    private TextView txt_error, txt_workcenter, txt_workorder, txt_plant,
+            txt_projectno, txt_orderqty, txt_inputqty, txt_starttime;
+    private String status_save, regis_date;
+    private int status_cmc_insert = 0;
 
     public CreateFragment() {
         super();
@@ -29,8 +58,9 @@ public class CreateFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
         init(savedInstanceState);
-
+        member = new ShareData("MEMBER");
         if (savedInstanceState != null)
             onRestoreInstanceState(savedInstanceState);
     }
@@ -40,6 +70,7 @@ public class CreateFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_create, container, false);
         initInstances(rootView, savedInstanceState);
+        fabQrcode.setOnClickListener(fabOnClickListener);
         return rootView;
     }
 
@@ -53,6 +84,19 @@ public class CreateFragment extends Fragment {
         // Init 'View' instance(s) with rootView.findViewById here
         // Note: State of variable initialized here could not be saved
         //       in onSavedInstanceState
+        txtID = (EditText) rootView.findViewById(R.id.txtID);
+        btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
+        fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
+        fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
+        cardContent = (CardView) rootView.findViewById(R.id.cardContent);
+        txt_workcenter = (TextView) rootView.findViewById(R.id.txt_workcenter_start);
+        txt_workorder = (TextView) rootView.findViewById(R.id.txt_workorder_start);
+        txt_plant = (TextView) rootView.findViewById(R.id.txt_plant_start);
+        txt_projectno = (TextView) rootView.findViewById(R.id.txt_projectno_start);
+        txt_orderqty = (TextView) rootView.findViewById(R.id.txt_orderqty_start);
+        txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_start);
+        txt_starttime = (TextView) rootView.findViewById(R.id.txt_starttime_start);
+        txt_error = (TextView) rootView.findViewById(R.id.txt_error_start);
     }
 
     @Override
@@ -66,4 +110,178 @@ public class CreateFragment extends Fragment {
         // Restore Instance (Fragment level's variables) State here
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 7 && resultCode == 1) {
+            cardContent.setVisibility(View.VISIBLE);
+            txtID.setText(data.getStringExtra("data"));
+            txtID.setSelection(txtID.getText().length());
+            startJob();
+        }
+    }
+
+    private void startJob() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+        if (txtID.getText().toString().equals("")) {
+            Toast.makeText(getActivity(), "Please, input or scan QR Code", Toast.LENGTH_SHORT).show();
+        } else {
+            String workcenter;
+            String workcenter_check;
+            String route_operation;
+            SelectDB select = new SelectDB();
+            HashMap<String, String> dataMasterResult = select.data_master(member.getUserRoute());
+
+            if (dataMasterResult != null) {
+                workcenter = dataMasterResult.get("WorkCenter");
+                if (member.getUserRoute().equals("BE")) {
+                    workcenter_check = workcenter.substring(0, 2);
+                } else if (member.getUserRoute().equals("BI")) {
+                    workcenter_check = workcenter.substring(0, 2);
+                } else if (member.getUserRoute().equals("QA")) {
+                    workcenter_check = workcenter.substring(0, 2);
+                } else {
+                    workcenter_check = workcenter.substring(0, 4);
+                }
+
+                builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " Start job complete.\nPlease, input new Work Order");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        txtID.setText("");
+                    }
+                });
+                builder.show();
+            } else {
+                HashMap<String, String> dataOperationResult = select.data_operation(txtID.getText().toString());
+                if (dataOperationResult != null) {
+                    workcenter = dataOperationResult.get("Work_Center");
+                    route_operation = dataOperationResult.get("Opertion_act");
+                    if (member.getUserRoute().equals("BE")) {
+                        //workcenter_check = workcenter.substring(0,2);
+                        //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
+                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " don\'t pass operation : " + member.getUserRoute());
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        });
+                        builder.show();
+
+                    } else if (member.getUserRoute().equals("BI")) {
+                        //workcenter_check = workcenter.substring(0,2);
+                        //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
+                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " don\'t pass operation : " + member.getUserRoute());
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        });
+                        builder.show();
+                    } else if (member.getUserRoute().equals("QA")) {
+                        //workcenter_check = workcenter.substring(0,2);
+                        //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
+                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " don\'t pass operation : " + member.getUserRoute());
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+
+                            }
+                        });
+                        builder.show();
+                    } else {
+                        workcenter_check = workcenter.substring(0, 4);
+                        if (workcenter_check.equals(member.getUserRoute()) && member.getUserRoute().equals("CMC1")) {
+                            HashMap<String, String> dataOrderResult = select.data_order(txtID.getText().toString());
+                            if (dataOrderResult != null) {
+                                status_cmc_insert = 1;
+                                status_save = "1";
+                            } else {
+                                //txt_error.setText("Find not found work order : "+qrcode+" in database (Order Data) !!!  Pls., contact administrator (MIS)");
+                                builder.setMessage("Find not found work order : " + txtID.getText().toString() + " in database (Order Data) !!! \nPlease, contact administrator (MIS)");
+                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+
+                                    }
+                                });
+                                builder.show();
+                            }
+
+                            txt_workcenter.setText(route_operation + " - " + workcenter);
+                            txt_workorder.setText(dataOrderResult.get("workorder"));
+                            txt_plant.setText(dataOrderResult.get("plant"));
+                            txt_projectno.setText(dataOrderResult.get("projectno"));
+                            txt_orderqty.setText(dataOrderResult.get("orderqty"));
+                            txt_inputqty.setText(dataOrderResult.get("orderqty"));
+
+                            if (status_cmc_insert == 1) {
+
+                                btn_save.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View v) {
+                                        if (status_save.equals("1")) {
+                                            Date d = new Date();
+                                            final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
+                                            regis_date = date.toString();
+                                            InsertDB insert = new InsertDB();
+                                            insert.data_master(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"),
+                                                    dataOrderResult.get("orderqty"), member.getUserID());
+                                            insert.data_tranin(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"));
+                                            Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
+
+                                        } else {
+                                            builder.setMessage("Please, input or scan QR Code");
+                                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    txt_error.setText("");
+                                                    txt_workcenter.setText("");
+                                                    txt_workorder.setText("");
+                                                    txt_plant.setText("");
+                                                    txt_projectno.setText("");
+                                                    txt_orderqty.setText("");
+                                                    txt_inputqty.setText("");
+                                                    txt_starttime.setText("");
+                                                }
+                                            });
+                                            builder.show();
+                                        }
+
+                                    }
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    //txt_error.setText("Find not found work order : "+qrcode+" in database (Operation Data) !!!  Pls., contact administrator (MIS)");
+                    builder.setMessage("Find not found work order : " + txtID.getText().toString() + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            txtID.setText("");
+                        }
+                    });
+                    builder.show();
+                }
+            }
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == 1) {
+            getActivity().finish();
+            Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
+        }
+        return true;
+    }
+
+    /*******
+     * listenner Zone
+     */
+
+    View.OnClickListener fabOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            Class activityClass = QrCodeActivity.class;
+            int activityQrCode = 7;
+            Intent i = new Intent(view.getContext(), activityClass);
+            startActivityForResult(i, activityQrCode);
+        }
+    };
 }

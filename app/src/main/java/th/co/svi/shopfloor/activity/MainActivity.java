@@ -18,7 +18,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Toast;
@@ -30,7 +29,6 @@ import th.co.svi.shopfloor.fragment.PendingFragmain;
 import th.co.svi.shopfloor.manager.ShareData;
 
 public class MainActivity extends AppCompatActivity {
-    private final int SIMPLE = 0;
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
@@ -102,19 +100,24 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        AlertDialog.Builder builder =
-                new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
-        builder.setTitle(getString(R.string.confirm));
-        builder.setMessage(getString(R.string.want_to_exit));
-        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-                //คลิกใช่ ออกจากโปรแกรม
-                finish();
-                MainActivity.super.onBackPressed();
-            }
-        });//second parameter used for onclicklistener
-        builder.setNegativeButton(getString(R.string.no), null);
-        builder.show();
+        if (isFabOpen) {
+            animateFAB();
+        } else {
+            AlertDialog.Builder builder =
+                    new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
+            builder.setTitle(getString(R.string.confirm));
+            builder.setMessage(getString(R.string.want_to_exit));
+            builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                    //คลิกใช่ ออกจากโปรแกรม
+                    finish();
+                    MainActivity.super.onBackPressed();
+                }
+            });//second parameter used for onclicklistener
+            builder.setNegativeButton(getString(R.string.no), null);
+            builder.show();
+        }
+
     }
 
     @Override
@@ -122,7 +125,7 @@ public class MainActivity extends AppCompatActivity {
         menu.clear();
         if (plan) {
 //            menu.add(1, 3, 2, "Find Date").setIcon(R.drawable.ic_date_range_white_24dp).setShowAsAction(2);?
-            menu.add(1, 3, 2, txtDate).setShowAsAction(1);
+            menu.add(1, 3, 3, txtDate).setShowAsAction(1);
 
         }
         menu.add(1, 1, 1, "User : " + shareMember.getUsername().toUpperCase() +
@@ -201,11 +204,7 @@ public class MainActivity extends AppCompatActivity {
                     animateFAB();
                     Intent i = new Intent(MainActivity.this, CreateActivity.class);
                     startActivity(i);
-                    finish();
-                /*    Class activityClass = QrCodeActivity.class;
-                    int activityQrCode = 7;
-                    Intent i = new Intent(view.getContext(), activityClass);
-                    startActivityForResult(i, activityQrCode);*/
+
                     break;
             }
         }

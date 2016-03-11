@@ -144,4 +144,102 @@ public class SelectDB {
         return listData;
     }
 
+    public HashMap<String, String> data_master(String qrcode) {
+        ResultSet result = null;
+        HashMap<String, String> listData = null;
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = new HashMap<>();
+                query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE QR_CODE = '" + qrcode + "' ORDER BY Route_Operation ";
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                listData.put("workcenter", result.getString("WorkCenter"));
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+
+        return listData;
+    }
+
+    public HashMap<String, String> data_operation(String qrcode) {
+        ResultSet result = null;
+        HashMap<String, String> listData = null;
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = new HashMap<>();
+                query = "SELECT * FROM SAP_ORDER_OPERATION WHERE WorkOrder = '" + qrcode + "' ORDER BY Opertion_act";
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                do {
+                    listData.put("workcenter", result.getString("Work_Center"));
+                    listData.put("route_operation", result.getString("Opertion_act"));
+                } while (result.next());
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+
+        return listData;
+    }
+
+    public HashMap<String, String> data_order(String qrcode) {
+        ResultSet result = null;
+        HashMap<String, String> listData = null;
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = new HashMap<>();
+                query = "SELECT WorkOrder,OrderType,Plant,Material,CAST(Ord_QTY AS int) AS Ord_QTY FROM SAP_ORDER_DATA WHERE WorkOrder = '" + qrcode + "'";
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                do {
+                    listData.put("workorder", result.getString("WorkOrder"));
+                    listData.put("plant", result.getString("Plant"));
+                    listData.put("projectno", result.getString("Material"));
+                    listData.put("orderqty", result.getString("Ord_QTY"));
+                } while (result.next());
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+
+        return listData;
+    }
+
 }

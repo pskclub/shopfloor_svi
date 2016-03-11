@@ -1,10 +1,14 @@
 package th.co.svi.shopfloor.fragment;
 
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Vibrator;
 
 import com.google.zxing.Result;
 import com.welcu.android.zxingfragmentlib.BarCodeScannerFragment;
+
+import th.co.svi.shopfloor.R;
 
 public class QrCodeFragment extends BarCodeScannerFragment {
 
@@ -15,7 +19,11 @@ public class QrCodeFragment extends BarCodeScannerFragment {
         this.setmCallBack(new IResultCallback() {
             @Override
             public void result(Result lastResult) {
-                Intent intent = new Intent ( );
+                Vibrator v = (Vibrator) getActivity().getSystemService(getActivity().VIBRATOR_SERVICE);
+                v.vibrate(200);
+                MediaPlayer mp = MediaPlayer.create(getActivity(), R.raw.beep);
+                mp.start();
+                Intent intent = new Intent();
                 intent.putExtra("data", lastResult.toString());
                 getActivity().setResult(1, intent);
                 getActivity().finish();

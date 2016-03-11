@@ -3,6 +3,8 @@ package th.co.svi.shopfloor.activity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuItem;
 
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.fragment.CreateFragment;
@@ -11,12 +13,13 @@ import th.co.svi.shopfloor.manager.ShareData;
 public class CreateActivity extends AppCompatActivity {
     private Toolbar toolbar;
     ShareData shareMember;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
         initInstances();
-        if(savedInstanceState == null){
+        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.contentContainer, CreateFragment.newInstance())
                     .commit();
@@ -29,6 +32,21 @@ public class CreateActivity extends AppCompatActivity {
 //        toolbar.setNavigationIcon(R.mipmap.ic_launcher);
         toolbar.setTitle("Start Job");
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(1, 1, 1, "SAVE").setIcon(R.drawable.ic_save_white_24dp).setShowAsAction(2);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 }
