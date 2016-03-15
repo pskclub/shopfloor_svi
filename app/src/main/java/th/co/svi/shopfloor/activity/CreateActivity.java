@@ -8,7 +8,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import th.co.svi.shopfloor.R;
-import th.co.svi.shopfloor.bus.ActivityResultBus;
+import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.fragment.CreateFragment;
 import th.co.svi.shopfloor.manager.ShareData;
@@ -55,7 +55,7 @@ public class CreateActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        ActivityResultBus.getInstance().postQueue(
+        ResultBus.getInstance().postQueue(
                 new ActivityResultEvent(requestCode, resultCode, data));
     }
 }

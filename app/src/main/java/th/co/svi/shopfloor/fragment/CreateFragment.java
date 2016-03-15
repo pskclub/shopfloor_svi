@@ -1,6 +1,5 @@
 package th.co.svi.shopfloor.fragment;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -9,10 +8,12 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.text.format.DateFormat;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -27,7 +28,7 @@ import java.util.HashMap;
 
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
-import th.co.svi.shopfloor.bus.ActivityResultBus;
+import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.InsertDB;
 import th.co.svi.shopfloor.manager.SelectDB;
@@ -81,7 +82,8 @@ public class CreateFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_create, container, false);
         initInstances(rootView, savedInstanceState);
         fabQrcode.setOnClickListener(fabOnClickListener);
-        btnSearch.setOnClickListener(btnSearchonClickListener);
+        btnSearch.setOnClickListener(btnSearchOnClickListener);
+        txtID.setOnEditorActionListener(textOnEditorActionListener);
         return rootView;
     }
 
@@ -124,13 +126,13 @@ public class CreateFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        ActivityResultBus.getInstance().register(mActivityResultSubscriber);
+        ResultBus.getInstance().register(mActivityResultSubscriber);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        ActivityResultBus.getInstance().unregister(mActivityResultSubscriber);
+        ResultBus.getInstance().unregister(mActivityResultSubscriber);
     }
 
     private Object mActivityResultSubscriber = new Object() {
@@ -181,11 +183,7 @@ public class CreateFragment extends Fragment {
 
                 builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() +
                         " Start job complete.\nPlease, input new Work Order");
-                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        txtID.setText("");
-                    }
-                });
+                builder.setPositiveButton("OK", null);
                 builder.show();
             } else {
                 dataOperationResult = select.data_operation(txtID.getText().toString());
@@ -193,19 +191,13 @@ public class CreateFragment extends Fragment {
                     workcenter = dataOperationResult.get("Work_Center");
                     route_operation = dataOperationResult.get("Opertion_act");
                     if (member.getUserRoute().equals("BE")) {
-                        //workcenter_check = workcenter.substring(0,2);
-                        //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
                         Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
                                 " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
 
                     } else if (member.getUserRoute().equals("BI")) {
-                        //workcenter_check = workcenter.substring(0,2);
-                        //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
-                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
+                       Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
                                 " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
                     } else if (member.getUserRoute().equals("QA")) {
-                        //workcenter_check = workcenter.substring(0,2);
-                        //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
                         Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
                                 " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
 
@@ -217,8 +209,7 @@ public class CreateFragment extends Fragment {
                                 status_cmc_insert = 1;
                                 status_save = "1";
                             } else {
-                                //txt_error.setText("Find not found work order : "+qrcode+" in database (Order Data) !!!  Pls., contact administrator (MIS)");
-                                Toast.makeText(getActivity(), "Find not found work order : \" + txtID.getText().toString() +\n" +
+                               Toast.makeText(getActivity(), "Find not found work order : \" + txtID.getText().toString() +\n" +
                                         " \" in database (Order Data) !!! \n" +
                                         "Please, contact administrator (MIS)", Toast.LENGTH_SHORT).show();
 
@@ -236,12 +227,9 @@ public class CreateFragment extends Fragment {
                     }
                 } else {
                     //txt_error.setText("Find not found work order : "+qrcode+" in database (Operation Data) !!!  Pls., contact administrator (MIS)");
-                    builder.setMessage("Find not found work order : " + txtID.getText().toString() + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            txtID.setText("");
-                        }
-                    });
+                    builder.setMessage("Find not found work order : " + txtID.getText().toString() +
+                            " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
+                    builder.setPositiveButton("OK", null);
                     builder.show();
                 }
             }
@@ -296,10 +284,24 @@ public class CreateFragment extends Fragment {
         }
     };
 
-    View.OnClickListener btnSearchonClickListener = new View.OnClickListener() {
+    View.OnClickListener btnSearchOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             startJob();
+        }
+    };
+
+    TextView.OnEditorActionListener textOnEditorActionListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                    actionId == EditorInfo.IME_ACTION_DONE ||
+                    event.getAction() == KeyEvent.ACTION_DOWN &&
+                            event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                startJob();
+                return true;
+            }
+            return false;
         }
     };
 }

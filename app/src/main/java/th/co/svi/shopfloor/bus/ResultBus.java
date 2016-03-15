@@ -6,13 +6,13 @@ import android.os.Looper;
 import com.squareup.otto.Bus;
 
 
-public class ActivityResultBus extends Bus {
+public class ResultBus extends Bus {
 
-    private static ActivityResultBus instance;
+    private static ResultBus instance;
 
-    public static ActivityResultBus getInstance() {
+    public static ResultBus getInstance() {
         if (instance == null)
-            instance = new ActivityResultBus();
+            instance = new ResultBus();
         return instance;
     }
 
@@ -22,7 +22,7 @@ public class ActivityResultBus extends Bus {
         mHandler.post(new Runnable() {
             @Override
             public void run() {
-                ActivityResultBus.getInstance().post(obj);
+                ResultBus.getInstance().post(obj);
             }
         });
     }

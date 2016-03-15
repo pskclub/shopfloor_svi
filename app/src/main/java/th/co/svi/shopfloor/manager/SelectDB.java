@@ -19,16 +19,24 @@ public class SelectDB {
     final String ERR = "-1";
     ConnectionDB ConnectionClass;
     String query;
+    ShareData shareMember;
+
 
     public SelectDB() {
         ConnectionClass = new ConnectionDB();
 
     }
 
-    public List<String> checkLogin(String username, String password) {
+
+    public HashMap<String, String> checkLogin(String username, String password) {
+
+        UserLoginTask mAuthTask = new UserLoginTask(username, password);
+        mAuthTask.execute((Void) null);
+
+
         ResultSet result = null;
-        List<String> listData = new ArrayList<>();
-        listData.add(0, FAIL);
+        HashMap<String, String> listData = new HashMap<>();
+        listData.put("status", FAIL);
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
@@ -38,7 +46,7 @@ public class SelectDB {
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
-                listData.add(0, ERR);
+                listData.put("status", ERR);
                 return listData;
             }
         } catch (SQLException e) {
@@ -48,9 +56,9 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
-                listData.add(0, SUCCESS);
-                listData.add(1, result.getString("USER_ID"));
-                listData.add(2, result.getString("USER_ROUTE"));
+                listData.put("status", SUCCESS);
+                listData.put("ID", result.getString("USER_ID"));
+                listData.put("route", result.getString("USER_ROUTE"));
                 return listData;
             }
         } catch (SQLException e) {

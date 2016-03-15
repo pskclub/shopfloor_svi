@@ -3,10 +3,9 @@ package th.co.svi.shopfloor.activity;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.AsyncTask;
-import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -16,11 +15,13 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.List;
+import com.squareup.otto.Subscribe;
 
 import th.co.svi.shopfloor.R;
-import th.co.svi.shopfloor.manager.SelectDB;
+import th.co.svi.shopfloor.bus.ResultBus;
+import th.co.svi.shopfloor.event.AsyncTaskEvent;
 import th.co.svi.shopfloor.manager.ShareData;
+import th.co.svi.shopfloor.manager.UserLoginTask;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -38,6 +39,7 @@ public class LoginActivity extends AppCompatActivity {
     String password;
     View focusView;
     ShareData shareMember;
+    AlertDialog.Builder builder;
 
     /**********************
      * Method Zone
@@ -137,7 +139,55 @@ public class LoginActivity extends AppCompatActivity {
         builder.show();
     }
 
-   /* @Override
+    @Override
+    protected void onResume() {
+        super.onResume();
+        ResultBus.getInstance().register(this);
+    }
+
+  /*  @Override
+    protected void onPause() {
+        super.onPause();
+        ResultBus.getInstance().unregister(this);
+    }*/
+
+    @Subscribe
+    public void loginResult(AsyncTaskEvent event) {
+
+        if (event.getEven() == 1) {
+            mAuthTask = null;
+            if (event.isSuccess()) {
+//                progressDialog.dismiss();
+                Intent i = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            } else {
+                progressDialog.dismiss();
+                if (event.getErr() == 1) {
+                    builder =
+                            new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
+                    builder.setMessage(R.string.server_fail);
+                    builder.setPositiveButton(getString(R.string.ok), null);
+                    builder.show();
+                    txtUsername.requestFocus();
+                } else {
+                    builder =
+                            new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
+                    builder.setMessage(R.string.error_incorrect_password);
+                    builder.setPositiveButton(R.string.ok, null);
+                    builder.show();
+                    txtUsername.requestFocus();
+
+                }
+            }
+        } else {
+            progressDialog.dismiss();
+            mAuthTask = null;
+        }
+        ResultBus.getInstance().unregister(this);
+    }
+
+    /* @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
@@ -196,84 +246,10 @@ public class LoginActivity extends AppCompatActivity {
     };
 
 
-
     /**********************
      * innerClass Zone
      **********************/
 
-    private class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
-        final String FAIL = "0";
-        final String SUCCESS = "1";
-        final String ERR = "-1";
-        private final String mEmail;
-        private final String mPassword;
-        private int setERR = 0;
-        AlertDialog.Builder builder;
 
-        UserLoginTask(String email, String password) {
-            mEmail = email;
-            mPassword = password;
-            setERR = 0;
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... params) {
-            SelectDB checkLogin = new SelectDB();
-            List<String> result;
-            try {
-                Thread.sleep(400);
-                result = checkLogin.checkLogin(mEmail, mPassword);
-                if (result.get(0).equals(SUCCESS)) {
-                    shareMember.setMember(true, username, result.get(1).toString(), result.get(2).toString());
-                    return true;
-                } else if (result.get(0).equals(ERR)) {
-                    this.setERR = 1;
-                    return false;
-                } else {
-                    return false;
-                }
-
-            } catch (InterruptedException e) {
-                return false;
-            }
-
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            mAuthTask = null;
-            progressDialog.dismiss();
-
-            if (success) {
-                Intent i = new Intent(LoginActivity.this, MainActivity.class);
-                startActivity(i);
-                finish();
-            } else {
-                if (setERR == 1) {
-                    builder =
-                            new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
-                    builder.setMessage(R.string.server_fail);
-                    builder.setPositiveButton(getString(R.string.ok), null);
-                    builder.show();
-                    txtUsername.requestFocus();
-                } else {
-                    builder =
-                            new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
-                    builder.setMessage(R.string.error_incorrect_password);
-                    builder.setPositiveButton(R.string.ok, null);
-                    builder.show();
-                    txtUsername.requestFocus();
-
-                }
-            }
-        }
-
-        @Override
-        protected void onCancelled() {
-            mAuthTask = null;
-            progressDialog.dismiss();
-            super.onCancelled();
-        }
-    }
 }
 
