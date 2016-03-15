@@ -1,7 +1,7 @@
 package th.co.svi.shopfloor.activity;
 
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,7 +29,6 @@ public class CreateActivity extends AppCompatActivity {
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        toolbar.setNavigationIcon(R.mipmap.ic_launcher);
         toolbar.setTitle("Start Job");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
@@ -49,4 +48,5 @@ public class CreateActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
 }

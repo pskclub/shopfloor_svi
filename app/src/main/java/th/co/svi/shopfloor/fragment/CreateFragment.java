@@ -1,14 +1,11 @@
 package th.co.svi.shopfloor.fragment;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.CardView;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -18,15 +15,10 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.sql.SQLException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import com.google.zxing.integration.android.IntentIntegrator;
 
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
-import th.co.svi.shopfloor.manager.InsertDB;
-import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
 
@@ -112,15 +104,16 @@ public class CreateFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == 7 && resultCode == 1) {
+      /*  if (requestCode == 7 && resultCode == 1) {
             cardContent.setVisibility(View.VISIBLE);
             txtID.setText(data.getStringExtra("data"));
             txtID.setSelection(txtID.getText().length());
-            startJob();
-        }
+//            startJob();
+        }*/
+       Toast.makeText(getActivity(), "cfdsfdfsd", Toast.LENGTH_SHORT).show();
     }
 
-    private void startJob() {
+/*    private void startJob() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
         if (txtID.getText().toString().equals("")) {
             Toast.makeText(getActivity(), "Please, input or scan QR Code", Toast.LENGTH_SHORT).show();
@@ -211,41 +204,7 @@ public class CreateFragment extends Fragment {
                             txt_orderqty.setText(dataOrderResult.get("orderqty"));
                             txt_inputqty.setText(dataOrderResult.get("orderqty"));
 
-                            if (status_cmc_insert == 1) {
 
-                                btn_save.setOnClickListener(new View.OnClickListener() {
-                                    @Override
-                                    public void onClick(View v) {
-                                        if (status_save.equals("1")) {
-                                            Date d = new Date();
-                                            final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
-                                            regis_date = date.toString();
-                                            InsertDB insert = new InsertDB();
-                                            insert.data_master(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"),
-                                                    dataOrderResult.get("orderqty"), member.getUserID());
-                                            insert.data_tranin(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"));
-                                            Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
-
-                                        } else {
-                                            builder.setMessage("Please, input or scan QR Code");
-                                            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int id) {
-                                                    txt_error.setText("");
-                                                    txt_workcenter.setText("");
-                                                    txt_workorder.setText("");
-                                                    txt_plant.setText("");
-                                                    txt_projectno.setText("");
-                                                    txt_orderqty.setText("");
-                                                    txt_inputqty.setText("");
-                                                    txt_starttime.setText("");
-                                                }
-                                            });
-                                            builder.show();
-                                        }
-
-                                    }
-                                });
-                            }
                         }
                     }
                 } else {
@@ -260,16 +219,47 @@ public class CreateFragment extends Fragment {
                 }
             }
         }
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
+            /*if (status_cmc_insert == 1) {
+                if (status_save.equals("1")) {
+                    Date d = new Date();
+                    final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
+                    regis_date = date.toString();
+                    InsertDB insert = new InsertDB();
+                    insert.data_master(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"),
+                            dataOrderResult.get("orderqty"), member.getUserID());
+                    insert.data_tranin(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"));
+                    Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    builder.setMessage("Please, input or scan QR Code");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            txt_error.setText("");
+                            txt_workcenter.setText("");
+                            txt_workorder.setText("");
+                            txt_plant.setText("");
+                            txt_projectno.setText("");
+                            txt_orderqty.setText("");
+                            txt_inputqty.setText("");
+                            txt_starttime.setText("");
+                        }
+                    });
+                    builder.show();
+
+                }
+            }*/
             getActivity().finish();
             Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
         }
         return true;
     }
+
+
 
     /*******
      * listenner Zone
@@ -278,10 +268,13 @@ public class CreateFragment extends Fragment {
     View.OnClickListener fabOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            Class activityClass = QrCodeActivity.class;
-            int activityQrCode = 7;
-            Intent i = new Intent(view.getContext(), activityClass);
-            startActivityForResult(i, activityQrCode);
+            IntentIntegrator integrator = new IntentIntegrator(getActivity());
+            integrator.setCaptureActivity(QrCodeActivity.class);
+            integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
+            integrator.setPrompt("Scan QR Code");
+            integrator.setOrientationLocked(true);
+            integrator.setBeepEnabled(true);
+            integrator.initiateScan();
         }
     };
 }

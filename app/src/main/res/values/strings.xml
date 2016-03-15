@@ -37,4 +37,6 @@
     <string name="menu">MENU</string>
     <string name="save">SAVE</string>
     <string name="search">SEARCH</string>
+    <string name="flashoff">Turn off flashlight</string>
+    <string name="flashon">Turn on flashlight</string>
 </resources>

@@ -1,7 +1,6 @@
 package th.co.svi.shopfloor;
 
 import android.app.Application;
-
 import th.co.svi.shopfloor.manager.Contextor;
 
 
