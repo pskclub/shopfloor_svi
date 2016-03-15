@@ -150,7 +150,6 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                listData = new HashMap<>();
                 query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE QR_CODE = '" + qrcode + "' ORDER BY Route_Operation ";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -164,6 +163,7 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
+                listData = new HashMap<>();
                 listData.put("workcenter", result.getString("WorkCenter"));
                 return listData;
             }
@@ -180,7 +180,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                listData = new HashMap<>();
+
                 query = "SELECT * FROM SAP_ORDER_OPERATION WHERE WorkOrder = '" + qrcode + "' ORDER BY Opertion_act";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -194,6 +194,7 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
+                listData = new HashMap<>();
                 do {
                     listData.put("workcenter", result.getString("Work_Center"));
                     listData.put("route_operation", result.getString("Opertion_act"));
@@ -213,7 +214,6 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                listData = new HashMap<>();
                 query = "SELECT WorkOrder,OrderType,Plant,Material,CAST(Ord_QTY AS int) AS Ord_QTY FROM SAP_ORDER_DATA WHERE WorkOrder = '" + qrcode + "'";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -227,6 +227,7 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
+                listData = new HashMap<>();
                 do {
                     listData.put("workorder", result.getString("WorkOrder"));
                     listData.put("plant", result.getString("Plant"));

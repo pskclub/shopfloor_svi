@@ -1,11 +1,14 @@
 package th.co.svi.shopfloor.fragment;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,10 +22,15 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.otto.Subscribe;
 
+import java.util.Date;
+import java.util.HashMap;
+
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
 import th.co.svi.shopfloor.bus.ActivityResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
+import th.co.svi.shopfloor.manager.InsertDB;
+import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
 
@@ -39,6 +47,11 @@ public class CreateFragment extends Fragment {
             txt_projectno, txt_orderqty, txt_inputqty, txt_starttime;
     private String status_save, regis_date;
     private int status_cmc_insert = 0;
+    private AlertDialog.Builder builder = null;
+    String workcenter, workcenter_check, route_operation;
+    SelectDB select;
+    InsertDB insert;
+    HashMap<String, String> dataMasterResult, dataOperationResult, dataOrderResult;
 
     public CreateFragment() {
         super();
@@ -57,6 +70,7 @@ public class CreateFragment extends Fragment {
         setHasOptionsMenu(true);
         init(savedInstanceState);
         member = new ShareData("MEMBER");
+        builder = new AlertDialog.Builder(this.getActivity());
         if (savedInstanceState != null)
             onRestoreInstanceState(savedInstanceState);
     }
@@ -67,6 +81,7 @@ public class CreateFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_create, container, false);
         initInstances(rootView, savedInstanceState);
         fabQrcode.setOnClickListener(fabOnClickListener);
+        btnSearch.setOnClickListener(btnSearchonClickListener);
         return rootView;
     }
 
@@ -137,25 +152,23 @@ public class CreateFragment extends Fragment {
                 Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_SHORT).show();
                 txtID.setText(result.getContents());
                 txtID.setSelection(txtID.getText().length());
-//            startJob();
+                startJob();
 
             }
         }
     }
 
-/*    private void startJob() {
-        final AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+    private void startJob() {
+        Date d = new Date();
+        final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
+        regis_date = date.toString();
         if (txtID.getText().toString().equals("")) {
             Toast.makeText(getActivity(), "Please, input or scan QR Code", Toast.LENGTH_SHORT).show();
         } else {
-            String workcenter;
-            String workcenter_check;
-            String route_operation;
-            SelectDB select = new SelectDB();
-            HashMap<String, String> dataMasterResult = select.data_master(member.getUserRoute());
-
+            select = new SelectDB();
+            dataMasterResult = select.data_master(txtID.getText().toString());
             if (dataMasterResult != null) {
-                workcenter = dataMasterResult.get("WorkCenter");
+                workcenter = dataMasterResult.get("workcenter");
                 if (member.getUserRoute().equals("BE")) {
                     workcenter_check = workcenter.substring(0, 2);
                 } else if (member.getUserRoute().equals("BI")) {
@@ -166,7 +179,8 @@ public class CreateFragment extends Fragment {
                     workcenter_check = workcenter.substring(0, 4);
                 }
 
-                builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " Start job complete.\nPlease, input new Work Order");
+                builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() +
+                        " Start job complete.\nPlease, input new Work Order");
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         txtID.setText("");
@@ -174,57 +188,40 @@ public class CreateFragment extends Fragment {
                 });
                 builder.show();
             } else {
-                HashMap<String, String> dataOperationResult = select.data_operation(txtID.getText().toString());
+                dataOperationResult = select.data_operation(txtID.getText().toString());
                 if (dataOperationResult != null) {
                     workcenter = dataOperationResult.get("Work_Center");
                     route_operation = dataOperationResult.get("Opertion_act");
                     if (member.getUserRoute().equals("BE")) {
                         //workcenter_check = workcenter.substring(0,2);
                         //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
-                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " don\'t pass operation : " + member.getUserRoute());
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                            }
-                        });
-                        builder.show();
+                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
+                                " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
 
                     } else if (member.getUserRoute().equals("BI")) {
                         //workcenter_check = workcenter.substring(0,2);
                         //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
-                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " don\'t pass operation : " + member.getUserRoute());
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-
-                            }
-                        });
-                        builder.show();
+                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
+                                " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
                     } else if (member.getUserRoute().equals("QA")) {
                         //workcenter_check = workcenter.substring(0,2);
                         //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+ USER_ROUTE);
-                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() + " don\'t pass operation : " + member.getUserRoute());
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
+                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
+                                " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
 
-                            }
-                        });
-                        builder.show();
                     } else {
                         workcenter_check = workcenter.substring(0, 4);
                         if (workcenter_check.equals(member.getUserRoute()) && member.getUserRoute().equals("CMC1")) {
-                            HashMap<String, String> dataOrderResult = select.data_order(txtID.getText().toString());
+                            dataOrderResult = select.data_order(txtID.getText().toString());
                             if (dataOrderResult != null) {
                                 status_cmc_insert = 1;
                                 status_save = "1";
                             } else {
                                 //txt_error.setText("Find not found work order : "+qrcode+" in database (Order Data) !!!  Pls., contact administrator (MIS)");
-                                builder.setMessage("Find not found work order : " + txtID.getText().toString() + " in database (Order Data) !!! \nPlease, contact administrator (MIS)");
-                                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int id) {
+                                Toast.makeText(getActivity(), "Find not found work order : \" + txtID.getText().toString() +\n" +
+                                        " \" in database (Order Data) !!! \n" +
+                                        "Please, contact administrator (MIS)", Toast.LENGTH_SHORT).show();
 
-                                    }
-                                });
-                                builder.show();
                             }
 
                             txt_workcenter.setText(route_operation + " - " + workcenter);
@@ -249,43 +246,35 @@ public class CreateFragment extends Fragment {
                 }
             }
         }
-    }*/
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            /*if (status_cmc_insert == 1) {
-                if (status_save.equals("1")) {
-                    Date d = new Date();
-                    final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
-                    regis_date = date.toString();
-                    InsertDB insert = new InsertDB();
-                    insert.data_master(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"),
-                            dataOrderResult.get("orderqty"), member.getUserID());
-                    insert.data_tranin(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"));
-                    Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
+            if (status_cmc_insert == 1) {
+                Date d = new Date();
+                final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
+                regis_date = date.toString();
+                insert = new InsertDB();
+                insert.data_master(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"),
+                        dataOrderResult.get("orderqty"), member.getUserID());
+                insert.data_tranin(txtID.getText().toString(),
+                        dataOperationResult.get("route_operation"),
+                        dataOperationResult.get("workcenter"),
+                        dataOrderResult.get("orderqty"),
+                        regis_date,
+                        member.getUserID());
+                Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
+                getActivity().finish();
+                Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getActivity(), "Please, input or scan QR Code", Toast.LENGTH_SHORT).show();
 
-                } else {
-                    builder.setMessage("Please, input or scan QR Code");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            txt_error.setText("");
-                            txt_workcenter.setText("");
-                            txt_workorder.setText("");
-                            txt_plant.setText("");
-                            txt_projectno.setText("");
-                            txt_orderqty.setText("");
-                            txt_inputqty.setText("");
-                            txt_starttime.setText("");
-                        }
-                    });
-                    builder.show();
+            }
 
-                }
-            }*/
-            getActivity().finish();
-            Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
         }
+
+
         return true;
     }
 
@@ -304,6 +293,13 @@ public class CreateFragment extends Fragment {
             integrator.setOrientationLocked(true);
             integrator.setBeepEnabled(true);
             integrator.initiateScan();
+        }
+    };
+
+    View.OnClickListener btnSearchonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            startJob();
         }
     };
 }
