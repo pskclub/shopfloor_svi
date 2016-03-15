@@ -1,5 +1,6 @@
 package th.co.svi.shopfloor.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -7,6 +8,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import th.co.svi.shopfloor.R;
+import th.co.svi.shopfloor.bus.ActivityResultBus;
+import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.fragment.CreateFragment;
 import th.co.svi.shopfloor.manager.ShareData;
 
@@ -49,4 +52,10 @@ public class CreateActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        ActivityResultBus.getInstance().postQueue(
+                new ActivityResultEvent(requestCode, resultCode, data));
+    }
 }

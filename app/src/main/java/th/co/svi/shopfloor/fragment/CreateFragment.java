@@ -16,9 +16,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
+import com.squareup.otto.Subscribe;
 
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
+import th.co.svi.shopfloor.bus.ActivityResultBus;
+import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.ShareData;
 
 
@@ -103,14 +107,40 @@ public class CreateFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        ActivityResultBus.getInstance().register(mActivityResultSubscriber);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        ActivityResultBus.getInstance().unregister(mActivityResultSubscriber);
+    }
+
+    private Object mActivityResultSubscriber = new Object() {
+        @Subscribe
+        public void onActivityResultReceived(ActivityResultEvent event) {
+            int requestCode = event.getRequestCode();
+            int resultCode = event.getResultCode();
+            Intent data = event.getData();
+            onActivityResult(requestCode, resultCode, data);
+        }
+    };
+
+    @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-      /*  if (requestCode == 7 && resultCode == 1) {
-            cardContent.setVisibility(View.VISIBLE);
-            txtID.setText(data.getStringExtra("data"));
-            txtID.setSelection(txtID.getText().length());
+
+        IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
+        if (result != null) {
+            if (!(result.getContents() == null)) {
+                Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_SHORT).show();
+                txtID.setText(result.getContents());
+                txtID.setSelection(txtID.getText().length());
 //            startJob();
-        }*/
-       Toast.makeText(getActivity(), "cfdsfdfsd", Toast.LENGTH_SHORT).show();
+
+            }
+        }
     }
 
 /*    private void startJob() {
@@ -258,7 +288,6 @@ public class CreateFragment extends Fragment {
         }
         return true;
     }
-
 
 
     /*******
