@@ -29,6 +29,9 @@
             android:label="@string/qrcodereader"
             android:theme="@style/QrcodeTheme"></activity>
         <activity android:name=".activity.CreateActivity"></activity>
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="f12b6520c3e3adeea306654abc6376206bb7b147" />
     </application>
 
 </manifest>
