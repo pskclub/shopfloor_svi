@@ -29,11 +29,6 @@ public class SelectDB {
 
 
     public HashMap<String, String> checkLogin(String username, String password) {
-
-        UserLoginTask mAuthTask = new UserLoginTask(username, password);
-        mAuthTask.execute((Void) null);
-
-
         ResultSet result = null;
         HashMap<String, String> listData = new HashMap<>();
         listData.put("status", FAIL);
@@ -151,6 +146,49 @@ public class SelectDB {
 
         return listData;
     }
+    public List<HashMap<String, String>> cmsMaster() {
+        ResultSet result = null;
+        List<HashMap<String, String>> listData = null;
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = new ArrayList<>();
+                query ="SELECT * FROM CMS_Master WHERE CMS_Status = '1' ";
+
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                do {
+                    HashMap<String, String> planning = new HashMap<>();
+                    planning.put("CMS_WorkOrder", result.getString("CMS_WorkOrder"));
+                    planning.put("CMS_ProjectNo", result.getString("CMS_ProjectNo"));
+                    planning.put("CMS_SideType", result.getString("CMS_SideType"));
+                    planning.put("CMS_LineName", result.getString("CMS_LineName"));
+                    planning.put("CMS_PlanYear", result.getString("CMS_PlanYear"));
+                    planning.put("CMS_PlanWeek", result.getString("CMS_PlanWeek"));
+                    planning.put("CMS_Plant", result.getString("CMS_Plant"));
+                    planning.put("CMS_OrderQty", result.getString("CMS_OrderQty"));
+                    planning.put("CMS_PlanLineNo", result.getString("CMS_PlanLineNo"));
+                    planning.put("CMS_Status", result.getString("CMS_Status"));
+                    listData.add(planning);
+                } while (result.next());
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+
+        return listData;
+    }
 
     public HashMap<String, String> data_master(String qrcode) {
         ResultSet result = null;
@@ -203,10 +241,8 @@ public class SelectDB {
         try {
             if (result != null && result.next()) {
                 listData = new HashMap<>();
-                do {
-                    listData.put("workcenter", result.getString("Work_Center"));
-                    listData.put("route_operation", result.getString("Opertion_act"));
-                } while (result.next());
+                listData.put("workcenter", result.getString("Work_Center"));
+                listData.put("route_operation", result.getString("Opertion_act"));
                 return listData;
             }
         } catch (SQLException e) {

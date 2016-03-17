@@ -12,7 +12,7 @@ import java.sql.SQLException;
 public class ConnectionDB {
     String ip = "12.1.2.18";
     String classs = "net.sourceforge.jtds.jdbc.Driver";
-    String db = "TESTDB";
+    String db = "SAPWI_DEV";
     String username = "sa";
     String password = "svi2014DB";
     Connection connect = null;

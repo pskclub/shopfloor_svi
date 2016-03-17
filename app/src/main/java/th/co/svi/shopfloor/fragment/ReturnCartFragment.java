@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import th.co.svi.shopfloor.R;
 
@@ -14,17 +13,14 @@ import th.co.svi.shopfloor.R;
 /**
  * Created by nuuneoi on 11/16/2014.
  */
-public class SendFragmain extends Fragment {
-    private TextView tvID;
-    private TextView tvUsername;
-    private TextView tvRoute;
+public class ReturnCartFragment extends Fragment {
 
-    public SendFragmain() {
+    public ReturnCartFragment() {
         super();
     }
 
-    public static SendFragmain newInstance() {
-        SendFragmain fragment = new SendFragmain();
+    public static ReturnCartFragment newInstance() {
+        ReturnCartFragment fragment = new ReturnCartFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -34,6 +30,7 @@ public class SendFragmain extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         init(savedInstanceState);
+
         if (savedInstanceState != null)
             onRestoreInstanceState(savedInstanceState);
     }
@@ -41,9 +38,8 @@ public class SendFragmain extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_send, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_return_cart, container, false);
         initInstances(rootView, savedInstanceState);
-
         return rootView;
     }
 

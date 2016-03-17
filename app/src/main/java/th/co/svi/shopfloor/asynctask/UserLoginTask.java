@@ -1,4 +1,4 @@
-package th.co.svi.shopfloor.manager;
+package th.co.svi.shopfloor.asynctask;
 
 import android.os.AsyncTask;
 
@@ -6,11 +6,13 @@ import java.util.HashMap;
 
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.AsyncTaskEvent;
+import th.co.svi.shopfloor.manager.SelectDB;
+import th.co.svi.shopfloor.manager.ShareData;
 
 /**
  * Created by MIS_Student5 on 15/3/2559.
  */
-public  class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
+public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
     final String FAIL = "0";
     final String SUCCESS = "1";
     final String ERR = "-1";
@@ -50,7 +52,7 @@ public  class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
     @Override
     protected void onPostExecute(Boolean success) {
         ResultBus.getInstance().post(
-                new AsyncTaskEvent(success, 1,setERR));
+                new AsyncTaskEvent(success, 1, setERR));
     }
 
     @Override

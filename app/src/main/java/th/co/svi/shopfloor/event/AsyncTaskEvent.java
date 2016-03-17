@@ -31,6 +31,10 @@ public class AsyncTaskEvent {
         return data;
     }
 
+    public void setEven(int even) {
+        this.even = even;
+    }
+
     public int getEven() {
         return even;
     }

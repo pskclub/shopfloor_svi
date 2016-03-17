@@ -21,7 +21,7 @@ import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.AsyncTaskEvent;
 import th.co.svi.shopfloor.manager.ShareData;
-import th.co.svi.shopfloor.manager.UserLoginTask;
+import th.co.svi.shopfloor.asynctask.UserLoginTask;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -113,10 +113,11 @@ public class LoginActivity extends AppCompatActivity {
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.setMessage("Authenticating...");
             progressDialog.show();
-            mAuthTask = new UserLoginTask(username, password);
-            mAuthTask.execute((Void) null);
             progressDialog.setOnKeyListener(dialogonKeyListener);
             progressDialog.setOnCancelListener(dialogCanclelistener);
+            mAuthTask = new UserLoginTask(username, password);
+            mAuthTask.execute();
+
         }
 
 
@@ -145,34 +146,30 @@ public class LoginActivity extends AppCompatActivity {
         ResultBus.getInstance().register(this);
     }
 
-  /*  @Override
+    @Override
     protected void onPause() {
         super.onPause();
         ResultBus.getInstance().unregister(this);
-    }*/
+    }
 
     @Subscribe
     public void loginResult(AsyncTaskEvent event) {
-
         if (event.getEven() == 1) {
+            progressDialog.dismiss();
             mAuthTask = null;
             if (event.isSuccess()) {
-//                progressDialog.dismiss();
                 Intent i = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(i);
                 finish();
             } else {
-                progressDialog.dismiss();
                 if (event.getErr() == 1) {
-                    builder =
-                            new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
+                    builder = new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
                     builder.setMessage(R.string.server_fail);
                     builder.setPositiveButton(getString(R.string.ok), null);
                     builder.show();
                     txtUsername.requestFocus();
                 } else {
-                    builder =
-                            new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
+                    builder = new AlertDialog.Builder(LoginActivity.this, R.style.AppCompatAlertDialogStyle);
                     builder.setMessage(R.string.error_incorrect_password);
                     builder.setPositiveButton(R.string.ok, null);
                     builder.show();
@@ -180,21 +177,14 @@ public class LoginActivity extends AppCompatActivity {
 
                 }
             }
-        } else {
-            progressDialog.dismiss();
+
+        } else if (event.getEven() == -1) {
             mAuthTask = null;
+            progressDialog.dismiss();
         }
-        ResultBus.getInstance().unregister(this);
+
     }
 
-    /* @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 7) {
-            txtUsername.setText(data.getStringExtra("data"));
-        }
-    }*/
 
     /**********************
      * Listenner Zone
@@ -244,12 +234,6 @@ public class LoginActivity extends AppCompatActivity {
             return false;
         }
     };
-
-
-    /**********************
-     * innerClass Zone
-     **********************/
-
 
 }
 

@@ -37,6 +37,7 @@ android {
         additionalParameters "--no-version-vectors"
     }
 
+
 }
 
 dependencies {

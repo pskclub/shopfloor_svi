@@ -151,7 +151,7 @@ public class CreateFragment extends Fragment {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null) {
             if (!(result.getContents() == null)) {
-                Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_SHORT).show();
+//                Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_SHORT).show();
                 txtID.setText(result.getContents());
                 txtID.setSelection(txtID.getText().length());
                 startJob();
@@ -171,16 +171,7 @@ public class CreateFragment extends Fragment {
             dataMasterResult = select.data_master(txtID.getText().toString());
             if (dataMasterResult != null) {
                 workcenter = dataMasterResult.get("workcenter");
-                if (member.getUserRoute().equals("BE")) {
-                    workcenter_check = workcenter.substring(0, 2);
-                } else if (member.getUserRoute().equals("BI")) {
-                    workcenter_check = workcenter.substring(0, 2);
-                } else if (member.getUserRoute().equals("QA")) {
-                    workcenter_check = workcenter.substring(0, 2);
-                } else {
-                    workcenter_check = workcenter.substring(0, 4);
-                }
-
+                workcenter_check = workcenter.trim();
                 builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() +
                         " Start job complete.\nPlease, input new Work Order");
                 builder.setPositiveButton("OK", null);
@@ -188,33 +179,33 @@ public class CreateFragment extends Fragment {
             } else {
                 dataOperationResult = select.data_operation(txtID.getText().toString());
                 if (dataOperationResult != null) {
-                    workcenter = dataOperationResult.get("Work_Center");
-                    route_operation = dataOperationResult.get("Opertion_act");
+                    workcenter = dataOperationResult.get("workcenter");
+                    route_operation = dataOperationResult.get("route_operation");
                     if (member.getUserRoute().equals("BE")) {
                         Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
                                 " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
 
                     } else if (member.getUserRoute().equals("BI")) {
-                       Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
+                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
                                 " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
                     } else if (member.getUserRoute().equals("QA")) {
                         Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
                                 " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
 
                     } else {
-                        workcenter_check = workcenter.substring(0, 4);
+                        workcenter_check = workcenter.trim();
                         if (workcenter_check.equals(member.getUserRoute()) && member.getUserRoute().equals("CMC1")) {
                             dataOrderResult = select.data_order(txtID.getText().toString());
                             if (dataOrderResult != null) {
                                 status_cmc_insert = 1;
                                 status_save = "1";
                             } else {
-                               Toast.makeText(getActivity(), "Find not found work order : \" + txtID.getText().toString() +\n" +
+                                Toast.makeText(getActivity(), "Not found work order : \" + txtID.getText().toString() +\n" +
                                         " \" in database (Order Data) !!! \n" +
                                         "Please, contact administrator (MIS)", Toast.LENGTH_SHORT).show();
 
                             }
-
+                            cardContent.setVisibility(View.VISIBLE);
                             txt_workcenter.setText(route_operation + " - " + workcenter);
                             txt_workorder.setText(dataOrderResult.get("workorder"));
                             txt_plant.setText(dataOrderResult.get("plant"));
@@ -227,7 +218,7 @@ public class CreateFragment extends Fragment {
                     }
                 } else {
                     //txt_error.setText("Find not found work order : "+qrcode+" in database (Operation Data) !!!  Pls., contact administrator (MIS)");
-                    builder.setMessage("Find not found work order : " + txtID.getText().toString() +
+                    builder.setMessage("Not found work order : " + txtID.getText().toString() +
                             " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
                     builder.setPositiveButton("OK", null);
                     builder.show();

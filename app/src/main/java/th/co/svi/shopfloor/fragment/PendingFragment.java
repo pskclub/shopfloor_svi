@@ -16,9 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import th.co.svi.shopfloor.R;
-import th.co.svi.shopfloor.activity.MainActivity;
 import th.co.svi.shopfloor.adapter.JobPendingAdapter;
-import th.co.svi.shopfloor.adapter.JobPlanListAdapter;
 import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
@@ -26,7 +24,7 @@ import th.co.svi.shopfloor.manager.ShareData;
 /**
  * Created by nuuneoi on 11/16/2014.
  */
-public class PendingFragmain extends Fragment {
+public class PendingFragment extends Fragment {
     private ShareData member;
     private GridView gvPlan;
     private TextView tvErr;
@@ -35,12 +33,12 @@ public class PendingFragmain extends Fragment {
     private JobPendingAdapter pendingAdapter = null;
     private List<HashMap<String, String>> pendingList = null;
 
-    public PendingFragmain() {
+    public PendingFragment() {
         super();
     }
 
-    public static PendingFragmain newInstance() {
-        PendingFragmain fragment = new PendingFragmain();
+    public static PendingFragment newInstance() {
+        PendingFragment fragment = new PendingFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;

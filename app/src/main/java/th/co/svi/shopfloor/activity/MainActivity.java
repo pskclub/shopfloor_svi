@@ -1,17 +1,14 @@
 package th.co.svi.shopfloor.activity;
 
-import android.app.DatePickerDialog;
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
-import android.support.v4.app.DialogFragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -24,8 +21,8 @@ import android.widget.Toast;
 
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.adapter.ViewPagerAdapter;
-import th.co.svi.shopfloor.fragment.MainFragmain;
-import th.co.svi.shopfloor.fragment.PendingFragmain;
+import th.co.svi.shopfloor.fragment.MainFragment;
+import th.co.svi.shopfloor.fragment.PendingFragment;
 import th.co.svi.shopfloor.manager.ShareData;
 
 public class MainActivity extends AppCompatActivity {
@@ -39,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
     ShareData shareMember;
     int[] tabIcons = {
             R.drawable.ic_list_white_36dp,
-            R.drawable.ic_send_white_36dp,
+            R.drawable.ic_shopping_cart_white_24dp,
             R.drawable.ic_schedule_white_36dp
     };
 
@@ -53,41 +50,65 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initInstances();
         viewPager.addOnPageChangeListener(onPageChangeListener);
-        fabMenu.setOnClickListener(onFabClickListener);
-        fabSend.setOnClickListener(onFabClickListener);
-        fabCreate.setOnClickListener(onFabClickListener);
+        if (shareMember.getUserRoute().equals("CMC1")) {
+            displayView_CMC();
+        } else if (shareMember.getUserRoute().equals("CMS1")) {
+            displayView_CMS();
+        } else {
+            displayView();
+        }
+
        /* if(savedInstanceState == null){
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.contentContainer, MainFragmain.newInstance())
+                    .add(R.id.contentContainer, MainFragment.newInstance())
                     .commit();
         }*/
     }
 
-    private void setupViewPager(ViewPager viewPager) {
-        pageAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        pageAdapter.addFragment(new MainFragmain(), "Show Plan");
-//        pageAdapter.addFragment(new SendFragmain(), "Send Job");
-        pageAdapter.addFragment(new PendingFragmain(), "Pending Job");
-        viewPager.setAdapter(pageAdapter);
+    private void displayView() {
     }
 
-    private void setupTabIcons() {
+    private void displayView_CMS() {
+        pageAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        pageAdapter.addFragment(new MainFragment(), "Show Plan");
+//        pageAdapter.addFragment(new ReturnCartFragment(), "Return Cart");
+        pageAdapter.addFragment(new PendingFragment(), "Pending Job");
+        viewPager.setAdapter(pageAdapter);
+
+        tabLayout.setupWithViewPager(viewPager);
         tabLayout.getTabAt(0).setIcon(tabIcons[0]);
-//        tabLayout.getTabAt(1).setIcon(tabIcons[1]);
         tabLayout.getTabAt(1).setIcon(tabIcons[2]);
+//        tabLayout.getTabAt(2).setIcon(tabIcons[1]);
+
+
+        fabMenu.setImageResource(R.drawable.ic_send_white_36dp);
+        fabMenu.setOnClickListener(cmcFabOnClickListener);
     }
+
+    private void displayView_CMC() {
+        pageAdapter = new ViewPagerAdapter(getSupportFragmentManager());
+        pageAdapter.addFragment(new MainFragment(), "Show Plan");
+        pageAdapter.addFragment(new PendingFragment(), "Pending Job");
+        viewPager.setAdapter(pageAdapter);
+
+        tabLayout.setupWithViewPager(viewPager);
+        tabLayout.getTabAt(0).setIcon(tabIcons[0]);
+        tabLayout.getTabAt(1).setIcon(tabIcons[2]);
+
+
+        fabMenu.setOnClickListener(onFabClickListener);
+        fabSend.setOnClickListener(onFabClickListener);
+        fabCreate.setOnClickListener(onFabClickListener);
+    }
+
 
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-//        toolbar.setNavigationIcon(R.mipmap.ic_launcher);
         toolbar.setTitle("Show Plan");
         setSupportActionBar(toolbar);
         viewPager = (ViewPager) findViewById(R.id.viewpager);
-        setupViewPager(viewPager);
         tabLayout = (TabLayout) findViewById(R.id.tabs);
-        tabLayout.setupWithViewPager(viewPager);
-        setupTabIcons();
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
         fabMenu = (FloatingActionButton) findViewById(R.id.fabMenu);
         fabSend = (FloatingActionButton) findViewById(R.id.fabSend);
@@ -138,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            Toast.makeText(this, item.getTitle(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Username : " + shareMember.getUsername() + "| Route : " + shareMember.getUserRoute(), Toast.LENGTH_SHORT).show();
         }
         if (item.getItemId() == 2) {
             AlertDialog.Builder builder =
@@ -166,9 +187,13 @@ public class MainActivity extends AppCompatActivity {
 
             fabMenu.startAnimation(rotate_backward);
             fabSend.startAnimation(fab_close);
-            fabCreate.startAnimation(fab_close);
+            if (shareMember.getUserRoute().equals("CMC1")) {
+                fabCreate.startAnimation(fab_close);
+                fabCreate.setClickable(false);
+            }
+
             fabSend.setClickable(false);
-            fabCreate.setClickable(false);
+
             isFabOpen = false;
             Log.d("Raj", "close");
 
@@ -176,9 +201,11 @@ public class MainActivity extends AppCompatActivity {
 
             fabMenu.startAnimation(rotate_forward);
             fabSend.startAnimation(fab_open);
-            fabCreate.startAnimation(fab_open);
+            if (shareMember.getUserRoute().equals("CMC1")) {
+                fabCreate.startAnimation(fab_open);
+                fabCreate.setClickable(true);
+            }
             fabSend.setClickable(true);
-            fabCreate.setClickable(true);
             isFabOpen = true;
             Log.d("Raj", "open");
 
@@ -197,8 +224,9 @@ public class MainActivity extends AppCompatActivity {
                     animateFAB();
                     break;
                 case R.id.fabSend:
-
                     animateFAB();
+                    Intent iSend = new Intent(MainActivity.this, SendActivity.class);
+                    startActivity(iSend);
                     break;
                 case R.id.fabCreate:
                     animateFAB();
@@ -207,6 +235,15 @@ public class MainActivity extends AppCompatActivity {
 
                     break;
             }
+        }
+    };
+
+    View.OnClickListener cmcFabOnClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent i = new Intent(MainActivity.this, SendActivity.class);
+            startActivity(i);
+
         }
     };
 

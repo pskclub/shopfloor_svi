@@ -10,21 +10,22 @@ import android.view.MenuItem;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
-import th.co.svi.shopfloor.fragment.CreateFragment;
+import th.co.svi.shopfloor.fragment.SendFragment;
 import th.co.svi.shopfloor.manager.ShareData;
 
-public class CreateActivity extends AppCompatActivity {
+public class SendActivity extends AppCompatActivity {
+
     private Toolbar toolbar;
     ShareData shareMember;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_create);
+        setContentView(R.layout.activity_send);
         initInstances();
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.contentContainer, CreateFragment.newInstance())
+                    .add(R.id.contentContainer, SendFragment.newInstance())
                     .commit();
         }
     }
@@ -32,7 +33,7 @@ public class CreateActivity extends AppCompatActivity {
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Start Job");
+        toolbar.setTitle("Send Job");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }

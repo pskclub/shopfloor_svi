@@ -6,7 +6,7 @@ import android.os.Looper;
 import com.squareup.otto.Bus;
 
 
-public class ResultBus extends Bus {
+public final class ResultBus extends Bus {
 
     private static ResultBus instance;
 

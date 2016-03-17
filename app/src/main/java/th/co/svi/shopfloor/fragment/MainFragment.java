@@ -2,15 +2,12 @@ package th.co.svi.shopfloor.fragment;
 
 import android.app.DatePickerDialog;
 import android.app.Dialog;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,7 +35,7 @@ import static android.support.v4.app.ActivityCompat.invalidateOptionsMenu;
 /**
  * Created by nuuneoi on 11/16/2014.
  */
-public class MainFragmain extends Fragment {
+public class MainFragment extends Fragment {
     private GridView gvPlan;
     private TextView tvErr;
     String txtDate = null;
@@ -50,12 +47,12 @@ public class MainFragmain extends Fragment {
     private PlanTask loadPlanAsync;
     SwipeRefreshLayout layoutRefresh;
 
-    public MainFragmain() {
+    public MainFragment() {
         super();
     }
 
-    public static MainFragmain newInstance() {
-        MainFragmain fragment = new MainFragmain();
+    public static MainFragment newInstance() {
+        MainFragment fragment = new MainFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
