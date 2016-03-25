@@ -58,13 +58,13 @@ public class JobPendingListItem extends BaseCustomViewGroup {
         txtQr = (TextView) findViewById(R.id.txtQr);
         txtWork = (TextView) findViewById(R.id.txtWork);
         card_view = (CardView) findViewById(R.id.card_view);
-        card_view.setClickable(true);
     }
 
     public void setData(String txtQr, String txtWork, String txtQuantity) {
         this.txtQr.setText(txtQr);
         this.txtWork.setText(txtWork);
         this.txtQuantity.setText(txtQuantity);
+
     }
 
     private void initWithAttrs(AttributeSet attrs, int defStyleAttr, int defStyleRes) {

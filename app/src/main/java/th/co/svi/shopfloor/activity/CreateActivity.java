@@ -32,7 +32,7 @@ public class CreateActivity extends AppCompatActivity {
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Start Job");
+        toolbar.setTitle("Start");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }

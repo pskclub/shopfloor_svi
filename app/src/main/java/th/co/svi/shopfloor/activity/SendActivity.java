@@ -22,18 +22,28 @@ public class SendActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send);
+        Bundle extras = getIntent().getExtras();
         initInstances();
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.contentContainer, SendFragment.newInstance())
-                    .commit();
+            if (extras != null) {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.contentContainer, SendFragment.newInstance(
+                                extras.getString("work_order")
+                        ))
+                        .commit();
+            } else {
+                getSupportFragmentManager().beginTransaction()
+                        .add(R.id.contentContainer, SendFragment.newInstance(null))
+                        .commit();
+            }
+
         }
     }
 
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Send Job");
+        toolbar.setTitle("Send");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }

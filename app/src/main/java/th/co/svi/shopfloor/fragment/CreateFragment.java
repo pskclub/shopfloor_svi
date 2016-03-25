@@ -44,12 +44,12 @@ public class CreateFragment extends Fragment {
     private FloatingActionButton fabQrcode;
     private CardView cardContent;
     private ShareData member;
-    private TextView txt_error, txt_workcenter, txt_workorder, txt_plant,
-            txt_projectno, txt_orderqty, txt_inputqty, txt_starttime;
-    private String status_save, regis_date;
-    private int status_cmc_insert = 0;
+    private TextView txt_workcenter, txt_workorder, txt_plant,
+            txt_projectno, txt_orderqty, txt_inputqty;
+    private String regis_date;
+    private int status_insert = 0;
     private AlertDialog.Builder builder = null;
-    String workcenter, workcenter_check, route_operation;
+    String workcenter, route_operation;
     SelectDB select;
     InsertDB insert;
     HashMap<String, String> dataMasterResult, dataOperationResult, dataOrderResult;
@@ -81,6 +81,7 @@ public class CreateFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_create, container, false);
         initInstances(rootView, savedInstanceState);
+
         fabQrcode.setOnClickListener(fabOnClickListener);
         btnSearch.setOnClickListener(btnSearchOnClickListener);
         txtID.setOnEditorActionListener(textOnEditorActionListener);
@@ -108,8 +109,6 @@ public class CreateFragment extends Fragment {
         txt_projectno = (TextView) rootView.findViewById(R.id.txt_projectno_start);
         txt_orderqty = (TextView) rootView.findViewById(R.id.txt_orderqty_start);
         txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_start);
-        txt_starttime = (TextView) rootView.findViewById(R.id.txt_starttime_start);
-        txt_error = (TextView) rootView.findViewById(R.id.txt_error_start);
     }
 
     @Override
@@ -147,17 +146,14 @@ public class CreateFragment extends Fragment {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
-        if (result != null) {
-            if (!(result.getContents() == null)) {
-//                Toast.makeText(getActivity(), result.getContents(), Toast.LENGTH_SHORT).show();
-                txtID.setText(result.getContents());
-                txtID.setSelection(txtID.getText().length());
-                startJob();
+        if (result != null && result.getContents() != null) {
+            txtID.setText(result.getContents());
+            txtID.setSelection(txtID.getText().length());
+            startJob();
 
-            }
         }
+
     }
 
     private void startJob() {
@@ -170,8 +166,6 @@ public class CreateFragment extends Fragment {
             select = new SelectDB();
             dataMasterResult = select.data_master(txtID.getText().toString());
             if (dataMasterResult != null) {
-                workcenter = dataMasterResult.get("workcenter");
-                workcenter_check = workcenter.trim();
                 builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() +
                         " Start job complete.\nPlease, input new Work Order");
                 builder.setPositiveButton("OK", null);
@@ -181,40 +175,32 @@ public class CreateFragment extends Fragment {
                 if (dataOperationResult != null) {
                     workcenter = dataOperationResult.get("workcenter");
                     route_operation = dataOperationResult.get("route_operation");
-                    if (member.getUserRoute().equals("BE")) {
-                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
-                                " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
-
-                    } else if (member.getUserRoute().equals("BI")) {
-                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
-                                " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
-                    } else if (member.getUserRoute().equals("QA")) {
-                        Toast.makeText(getActivity(), "Sorry! Work Order : " + txtID.getText().toString() +
-                                " don\'t pass operation : " + member.getUserRoute(), Toast.LENGTH_SHORT).show();
+                    if (!member.getUserRoute().equals(workcenter)) {
+                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() +
+                                " don\'t pass operation : " + member.getUserRoute());
+                        builder.setPositiveButton("OK", null);
+                        builder.show();
 
                     } else {
-                        workcenter_check = workcenter.trim();
-                        if (workcenter_check.equals(member.getUserRoute()) && member.getUserRoute().equals("CMC1")) {
-                            dataOrderResult = select.data_order(txtID.getText().toString());
-                            if (dataOrderResult != null) {
-                                status_cmc_insert = 1;
-                                status_save = "1";
-                            } else {
-                                Toast.makeText(getActivity(), "Not found work order : \" + txtID.getText().toString() +\n" +
-                                        " \" in database (Order Data) !!! \n" +
-                                        "Please, contact administrator (MIS)", Toast.LENGTH_SHORT).show();
-
-                            }
-                            cardContent.setVisibility(View.VISIBLE);
-                            txt_workcenter.setText(route_operation + " - " + workcenter);
-                            txt_workorder.setText(dataOrderResult.get("workorder"));
-                            txt_plant.setText(dataOrderResult.get("plant"));
-                            txt_projectno.setText(dataOrderResult.get("projectno"));
-                            txt_orderqty.setText(dataOrderResult.get("orderqty"));
-                            txt_inputqty.setText(dataOrderResult.get("orderqty"));
-
+                        dataOrderResult = select.data_order(txtID.getText().toString());
+                        if (dataOrderResult != null) {
+                            status_insert = 1;
+                        } else {
+                            builder.setMessage("Not found work order : \" + txtID.getText().toString() +\n" +
+                                    " \" in database (Order Data) !!! \n" +
+                                    "Please, contact administrator (MIS)");
+                            builder.setPositiveButton("OK", null);
+                            builder.show();
 
                         }
+                        cardContent.setVisibility(View.VISIBLE);
+                        txt_workcenter.setText(route_operation + " - " + workcenter);
+                        txt_workorder.setText(dataOrderResult.get("workorder"));
+                        txt_plant.setText(dataOrderResult.get("plant"));
+                        txt_projectno.setText(dataOrderResult.get("projectno"));
+                        txt_orderqty.setText(dataOrderResult.get("orderqty"));
+                        txt_inputqty.setText(dataOrderResult.get("orderqty"));
+
                     }
                 } else {
                     //txt_error.setText("Find not found work order : "+qrcode+" in database (Operation Data) !!!  Pls., contact administrator (MIS)");
@@ -230,20 +216,17 @@ public class CreateFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            if (status_cmc_insert == 1) {
+            if (status_insert == 1) {
                 Date d = new Date();
                 final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
                 regis_date = date.toString();
                 insert = new InsertDB();
                 insert.data_master(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"),
                         dataOrderResult.get("orderqty"), member.getUserID());
-                insert.data_tranin(txtID.getText().toString(),
-                        dataOperationResult.get("route_operation"),
-                        dataOperationResult.get("workcenter"),
-                        dataOrderResult.get("orderqty"),
-                        regis_date,
-                        member.getUserID());
+                insert.data_tranin(txtID.getText().toString(), dataOperationResult.get("route_operation"),
+                        dataOperationResult.get("workcenter"), dataOrderResult.get("orderqty"), regis_date, member.getUserID());
                 Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
+                getActivity().setResult(1);
                 getActivity().finish();
                 Toast.makeText(getActivity(), "save", Toast.LENGTH_SHORT).show();
             } else {

@@ -28,11 +28,11 @@
     <string name="workorder">Work Order</string>
     <string name="plant">Plant</string>
     <string name="projectno">Project No.</string>
-    <string name="order_qty">Order Q\'ty</string>
+    <string name="order_qty">Order Quantity</string>
     <string name="starttime">Start Time</string>
     <string name="finishtime">Finish Time</string>
-    <string name="input_qty">Input Q\'ty</string>
-    <string name="output_qty">Output Q\'ty</string>
+    <string name="input_qty">Input Quantity</string>
+    <string name="output_qty">Output Quantity</string>
     <string name="menu">MENU</string>
     <string name="save">SAVE</string>
     <string name="search">SEARCH</string>

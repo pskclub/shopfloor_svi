@@ -1,5 +1,6 @@
 package th.co.svi.shopfloor.fragment;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -8,15 +9,21 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.otto.Subscribe;
 
 import java.util.HashMap;
 import java.util.List;
 
 import th.co.svi.shopfloor.R;
+import th.co.svi.shopfloor.activity.SendActivity;
 import th.co.svi.shopfloor.adapter.JobPendingAdapter;
+import th.co.svi.shopfloor.bus.ResultBus;
+import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
@@ -60,6 +67,7 @@ public class PendingFragment extends Fragment {
         initInstances(rootView, savedInstanceState);
         loadPlan();
         layoutRefresh.setOnRefreshListener(onRefreshListener);
+        gvPlan.setOnItemClickListener(gridClickListener);
         return rootView;
     }
 
@@ -95,6 +103,36 @@ public class PendingFragment extends Fragment {
         // Restore Instance (Fragment level's variables) State here
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        ResultBus.getInstance().register(mActivityResultSubscriber);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        ResultBus.getInstance().unregister(mActivityResultSubscriber);
+    }
+
+    private Object mActivityResultSubscriber = new Object() {
+        @Subscribe
+        public void onActivityResultReceived(ActivityResultEvent event) {
+            int requestCode = event.getRequestCode();
+            int resultCode = event.getResultCode();
+            Intent data = event.getData();
+            onActivityResult(requestCode, resultCode, data);
+        }
+    };
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1 && resultCode == 1) {
+            loadPlan();
+        }
+
+    }
+
     /**********************
      * Listener Zone
      **********************/
@@ -102,6 +140,15 @@ public class PendingFragment extends Fragment {
         @Override
         public void onRefresh() {
             loadPlan();
+        }
+    };
+
+    AdapterView.OnItemClickListener gridClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            Intent send = new Intent(getActivity(), SendActivity.class);
+            send.putExtra("work_order", pendingList.get(position).get("QR_CODE"));
+            startActivity(send);
         }
     };
 

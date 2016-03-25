@@ -21,6 +21,8 @@ import android.widget.Toast;
 
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.adapter.ViewPagerAdapter;
+import th.co.svi.shopfloor.bus.ResultBus;
+import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.fragment.MainFragment;
 import th.co.svi.shopfloor.fragment.PendingFragment;
 import th.co.svi.shopfloor.manager.ShareData;
@@ -30,13 +32,12 @@ public class MainActivity extends AppCompatActivity {
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private CoordinatorLayout coordinatorLayout;
-    boolean plan = true;
+    boolean plan = false;
     public static String txtDate = (DateFormat.format("yyyy-MM-dd", new java.util.Date()).toString());
     ViewPagerAdapter pageAdapter;
     ShareData shareMember;
     int[] tabIcons = {
             R.drawable.ic_list_white_36dp,
-            R.drawable.ic_shopping_cart_white_24dp,
             R.drawable.ic_schedule_white_36dp
     };
 
@@ -50,51 +51,42 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         initInstances();
         viewPager.addOnPageChangeListener(onPageChangeListener);
-        if (shareMember.getUserRoute().equals("CMC1")) {
-            displayView_CMC();
-        } else if (shareMember.getUserRoute().equals("CMS1")) {
-            displayView_CMS();
+        if (shareMember.getUserRoute().equals("CMC1") ||
+                shareMember.getUserRoute().equals("CMS1") ||
+                shareMember.getUserRoute().equals("SMT1")) {
+            displayViewPendingAndPlan();
         } else {
-            displayView();
+            displayViewPending(savedInstanceState);
         }
 
-       /* if(savedInstanceState == null){
+
+    }
+
+    private void displayViewPending(Bundle savedInstanceState) {
+        viewPager.setVisibility(View.GONE);
+        tabLayout.setVisibility(View.GONE);
+        if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.contentContainer, MainFragment.newInstance())
+                    .add(R.id.contentContainer, PendingFragment.newInstance())
                     .commit();
-        }*/
+        }
+
+        fabMenu.setOnClickListener(onFabClickListener);
+        fabSend.setOnClickListener(onFabClickListener);
+        fabCreate.setOnClickListener(onFabClickListener);
     }
 
-    private void displayView() {
-    }
 
-    private void displayView_CMS() {
+    private void displayViewPendingAndPlan() {
         pageAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        pageAdapter.addFragment(new MainFragment(), "Show Plan");
-//        pageAdapter.addFragment(new ReturnCartFragment(), "Return Cart");
-        pageAdapter.addFragment(new PendingFragment(), "Pending Job");
+        pageAdapter.addFragment(new PendingFragment(), "Pending");
+        pageAdapter.addFragment(new MainFragment(), "Planning");
+
         viewPager.setAdapter(pageAdapter);
 
         tabLayout.setupWithViewPager(viewPager);
-        tabLayout.getTabAt(0).setIcon(tabIcons[0]);
-        tabLayout.getTabAt(1).setIcon(tabIcons[2]);
-//        tabLayout.getTabAt(2).setIcon(tabIcons[1]);
-
-
-        fabMenu.setImageResource(R.drawable.ic_send_white_36dp);
-        fabMenu.setOnClickListener(cmcFabOnClickListener);
-    }
-
-    private void displayView_CMC() {
-        pageAdapter = new ViewPagerAdapter(getSupportFragmentManager());
-        pageAdapter.addFragment(new MainFragment(), "Show Plan");
-        pageAdapter.addFragment(new PendingFragment(), "Pending Job");
-        viewPager.setAdapter(pageAdapter);
-
-        tabLayout.setupWithViewPager(viewPager);
-        tabLayout.getTabAt(0).setIcon(tabIcons[0]);
-        tabLayout.getTabAt(1).setIcon(tabIcons[2]);
-
+        tabLayout.getTabAt(0).setIcon(tabIcons[1]);
+        tabLayout.getTabAt(1).setIcon(tabIcons[0]);
 
         fabMenu.setOnClickListener(onFabClickListener);
         fabSend.setOnClickListener(onFabClickListener);
@@ -105,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Show Plan");
+        toolbar.setTitle("Pending");
         setSupportActionBar(toolbar);
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         tabLayout = (TabLayout) findViewById(R.id.tabs);
@@ -187,13 +179,9 @@ public class MainActivity extends AppCompatActivity {
 
             fabMenu.startAnimation(rotate_backward);
             fabSend.startAnimation(fab_close);
-            if (shareMember.getUserRoute().equals("CMC1")) {
-                fabCreate.startAnimation(fab_close);
-                fabCreate.setClickable(false);
-            }
-
+            fabCreate.startAnimation(fab_close);
+            fabCreate.setClickable(false);
             fabSend.setClickable(false);
-
             isFabOpen = false;
             Log.d("Raj", "close");
 
@@ -201,10 +189,8 @@ public class MainActivity extends AppCompatActivity {
 
             fabMenu.startAnimation(rotate_forward);
             fabSend.startAnimation(fab_open);
-            if (shareMember.getUserRoute().equals("CMC1")) {
-                fabCreate.startAnimation(fab_open);
-                fabCreate.setClickable(true);
-            }
+            fabCreate.startAnimation(fab_open);
+            fabCreate.setClickable(true);
             fabSend.setClickable(true);
             isFabOpen = true;
             Log.d("Raj", "open");
@@ -226,26 +212,25 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.fabSend:
                     animateFAB();
                     Intent iSend = new Intent(MainActivity.this, SendActivity.class);
-                    startActivity(iSend);
+                    startActivityForResult(iSend, 2);
                     break;
                 case R.id.fabCreate:
                     animateFAB();
                     Intent i = new Intent(MainActivity.this, CreateActivity.class);
-                    startActivity(i);
+                    startActivityForResult(i, 1);
 
                     break;
             }
         }
     };
 
-    View.OnClickListener cmcFabOnClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            Intent i = new Intent(MainActivity.this, SendActivity.class);
-            startActivity(i);
-
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == 1 && resultCode == 1) {
+            ResultBus.getInstance().postQueue(
+                    new ActivityResultEvent(requestCode, resultCode, data));
         }
-    };
+    }
 
     ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
         @Override
@@ -257,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         public void onPageSelected(int position) {
             toolbar.setTitle(pageAdapter.getMyPageTitle(position));
             setSupportActionBar(toolbar);
-            if (position == 0)
+            if (position == 1)
                 plan = true;
             else
                 plan = false;
