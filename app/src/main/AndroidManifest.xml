@@ -28,13 +28,13 @@
             android:name=".activity.QrCodeActivity"
             android:label="@string/qrcodereader"
             android:theme="@style/QrcodeTheme" />
-        <activity android:name=".activity.CreateActivity" />
+        <activity android:name=".activity.CreateActivity"  android:windowSoftInputMode="stateHidden" />
 
         <meta-data
             android:name="io.fabric.ApiKey"
             android:value="f12b6520c3e3adeea306654abc6376206bb7b147" />
 
-        <activity android:name=".activity.SendActivity"></activity>
+        <activity android:name=".activity.SendActivity"  android:windowSoftInputMode="stateHidden" ></activity>
     </application>
 
 </manifest>

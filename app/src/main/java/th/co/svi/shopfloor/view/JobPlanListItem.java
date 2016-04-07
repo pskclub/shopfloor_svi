@@ -65,7 +65,7 @@ public class JobPlanListItem extends BaseCustomViewGroup {
 
     public void setData(String txtWork, String txtPlan, String txtQuantity, String txtStatus) {
         this.txtWork.setText(txtWork);
-        this.txtPlan.setText(txtPlan);
+        this.txtPlan.setText("Plant : "+txtPlan);
         this.txtQuantity.setText(txtQuantity);
         if (txtStatus.equals("0")) {
             this.txtStatus.setText("Progress");

@@ -63,7 +63,7 @@ public class JobPendingListItem extends BaseCustomViewGroup {
     public void setData(String txtQr, String txtWork, String txtQuantity) {
         this.txtQr.setText(txtQr);
         this.txtWork.setText(txtWork);
-        this.txtQuantity.setText(txtQuantity);
+        this.txtQuantity.setText((int) Double.parseDouble(txtQuantity)+"");
 
     }
 

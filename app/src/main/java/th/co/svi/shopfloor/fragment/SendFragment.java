@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
@@ -40,6 +42,7 @@ public class SendFragment extends Fragment {
     ImageButton btnSearch;
     String status_now;
     String status_next;
+    CardView cardContent;
     boolean status_do = false;
     String status;
     String status_save;
@@ -69,6 +72,8 @@ public class SendFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         init(savedInstanceState);
+        setHasOptionsMenu(true);
+        builder = new AlertDialog.Builder(this.getActivity());
         if (savedInstanceState != null)
             onRestoreInstanceState(savedInstanceState);
     }
@@ -78,6 +83,7 @@ public class SendFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_send, container, false);
         initInstances(rootView, savedInstanceState);
+        member = new ShareData("MEMBER");
         if (getArguments().getString("work_order") != null) {
             txtID.setText(getArguments().getString("work_order"));
             sendJob(txtID.getText().toString());
@@ -136,6 +142,7 @@ public class SendFragment extends Fragment {
         //       in onSavedInstanceState
         txtID = (EditText) rootView.findViewById(R.id.txtID);
         edt_outputqty = (EditText) rootView.findViewById(R.id.txt_outputqty_send_job);
+        cardContent = (CardView) rootView.findViewById(R.id.cardContent);
         txt_workcenter = (TextView) rootView.findViewById(R.id.txt_workcenter_send_job);
         txt_nextcenter = (TextView) rootView.findViewById(R.id.txt_nextworkcenter_send_job);
         txt_workorder = (TextView) rootView.findViewById(R.id.txt_workorder_send_job);
@@ -144,18 +151,11 @@ public class SendFragment extends Fragment {
         txt_orderqty = (TextView) rootView.findViewById(R.id.txt_orderqty_send_job);
         txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_send_job);
         txt_starttime = (TextView) rootView.findViewById(R.id.txt_starttime_send_job);
-        txt_finishtime = (TextView) rootView.findViewById(R.id.txt_finishtime_send_job);
         fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
     }
 
     public void sendJob(final String qrcode) {
-        if (qrcode.equals("")) {
-            builder.setMessage("Please, input or scan QR Code");
-            builder.setPositiveButton("OK", null);
-            builder.show();
-        }
-
         qty_total = 0;
         qty_input = 0;
         qty_output = 0;
@@ -171,6 +171,9 @@ public class SendFragment extends Fragment {
         status = "0";
         status_save = "0";
 
+
+        status_do = false;
+        cardContent.setVisibility(View.GONE);
         if (qrcode.equals("")) {
             builder.setMessage("Please, input or scan QR Code");
             builder.setPositiveButton("OK", null);
@@ -185,35 +188,62 @@ public class SendFragment extends Fragment {
                     operation_act = result.get("operation_act");
                     workcenter_true = result.get("workcenter_true");
                     if (member.getUserRoute().equals(workcenter)) { //CHECK USER_ROUTE AND WORK CENTER
+                        int index2 = index + 1;
                         status_do = true;
-                        workcenterNext = sapResult.get(index++ + 1).get("workcenter");
-                        operation_actNext = sapResult.get(index++ + 1).get("operation_act");
-                        workcenter_trueNext = sapResult.get(index++ + 1).get("workcenter_true");
+                        workcenterNext = sapResult.get(index2).get("workcenter");
+                        operation_actNext = sapResult.get(index2).get("operation_act");
+                        workcenter_trueNext = sapResult.get(index2).get("workcenter_true");
                         break;
                     } else {
                         workcenter = null;
                         operation_act = null;
+                        workcenter_true = null;
                     }// END CHECK USER_ROUTE AND WORK CENTER
+                    index = index + 1;
                 }// END WHILE rs_operation
-                List<HashMap<String, String>> tranIn = select.tranIn(qrcode, operation_act, workcenter);
-                List<HashMap<String, String>> tranOut = select.tranOut(qrcode, operation_act, workcenter);
-                for (HashMap<String, String> result : tranIn) {
-                    sumTranIn = sumTranIn + Integer.parseInt(result.get("qty"));
-                }// END WHILE rs_operation
-                for (HashMap<String, String> result : tranOut) {
-                    sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
+                if (status_do) {
+                    List<HashMap<String, String>> tranIn = select.tranIn(qrcode, operation_act, workcenter);
+                    List<HashMap<String, String>> tranOut = select.tranOut(qrcode, operation_act, workcenter);
+                    HashMap<String, String> resultMobileMaster = select.data_master(qrcode, operation_act, workcenter);
+                    if (resultMobileMaster == null) {
+                        builder.setMessage("Sorry! Work Order : " + qrcode + " don\'t pass operation : " + workcenter);
+                        builder.setPositiveButton("OK", null);
+                        builder.show();
+                    } else {
+                        for (HashMap<String, String> result : tranIn) {
+                            sumTranIn = sumTranIn + Integer.parseInt(result.get("qty"));
+                        }// END WHILE rs_operation
+                        for (HashMap<String, String> result : tranOut) {
+                            sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
 
-                }// END WHILE rs_operation
-                sumTranResult = sumTranIn - sumTranOut;
-                HashMap<String, String> orderResult = select.data_order(qrcode);
-                if (orderResult == null) {
-                    //txt_error.setText("Find not found work order : "+qrcode+" in database (Order Data) !!!  Pls., contact administrator (MIS)");
-                    builder.setMessage("Find not found work order : " + qrcode + " in database (Order Data) !!!\nPlease, contact administrator (MIS)");
+                        }// END WHILE rs_operation
+                        sumTranResult = sumTranIn - sumTranOut;
+                        HashMap<String, String> orderResult = select.data_order(qrcode);
+                        if (orderResult == null) {
+                            //txt_error.setText("Find not found work order : "+qrcode+" in database (Order Data) !!!  Pls., contact administrator (MIS)");
+                            builder.setMessage("Find not found work order : " + qrcode + " in database (Order Data) !!!\nPlease, contact administrator (MIS)");
+                            builder.setPositiveButton("OK", null);
+                            builder.show();
+                        } else {
+                            cardContent.setVisibility(View.VISIBLE);
+                            txt_workcenter.setText(workcenter_true + " - " + operation_act);
+                            txt_nextcenter.setText(workcenter_trueNext + " - " + operation_actNext);
+                            txt_workorder.setText(orderResult.get("workorder"));
+                            txt_plant.setText(orderResult.get("plant"));
+                            txt_project.setText(orderResult.get("projectno"));
+                            txt_orderqty.setText(orderResult.get("orderqty"));
+                            txt_inputqty.setText(sumTranIn + "");
+                            txt_starttime.setText(resultMobileMaster.get("starttime"));
+                            edt_outputqty.setText(sumTranResult + "");
+                        }
+                    }
+                } else {
+                    builder.setMessage("Find not found work order : " + qrcode + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
                     builder.setPositiveButton("OK", null);
                     builder.show();
                 }
 
-             
+
             } else {
                 //txt_error.setText("Find not found work order : "+qrcode+" in database (Operation Data) !!!  Pls., contact administrator (MIS)");
                 builder.setMessage("Find not found work order : " + qrcode + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
@@ -242,7 +272,11 @@ public class SendFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-
+            if (status_do == true) {
+                Toast.makeText(getContext(), "save ok", Toast.LENGTH_SHORT).show();
+            }else {
+                Toast.makeText(getContext(), "save err", Toast.LENGTH_SHORT).show();
+            }
         }
 
         return true;

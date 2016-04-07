@@ -50,7 +50,7 @@ public class SendActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(1, 1, 1, "SAVE").setIcon(R.drawable.ic_check_white_24dp).setShowAsAction(2);
+        menu.add(1, 1, 1, "SAVE").setShowAsAction(2);
         return true;
     }
 

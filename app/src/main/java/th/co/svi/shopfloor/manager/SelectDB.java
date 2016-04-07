@@ -114,9 +114,7 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT QR_CODE,Route_Operation,WorkCenter,WorkOrder,CAST(Qty_WO AS int) " +
-                        "AS Qty_WO,Status,Close_JobDate,Regis_by,Regis_Date,Update_by,Update_Date " +
-                        "FROM MOBILE_Shopfloor_Master  WHERE Status = '0'  AND WorkCenter LIKE '" + USER_ROUTE +
+                query = "SELECT * FROM MOBILE_Shopfloor_Master  WHERE Status = '0'  AND WorkCenter LIKE '" + USER_ROUTE +
                         "%' ORDER BY QR_CODE";
 
                 Statement stmt = con.createStatement();
@@ -153,7 +151,6 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                listData = new ArrayList<>();
                 query = "SELECT * FROM SAP_ORDER_OPERATION WHERE WorkOrder = '" + qrcode + "' ORDER BY Opertion_act";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -167,6 +164,7 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
+                listData = new ArrayList<>();
                 do {
                     HashMap<String, String> planning = new HashMap<>();
                     planning.put("workcenter", result.getString("Work_Center"));
@@ -182,7 +180,10 @@ public class SelectDB {
 
         return listData;
     }
-    public List<HashMap<String, String>> tranIn(String qrcode,String operation_act,String workcenter) {
+
+
+
+    public List<HashMap<String, String>> tranIn(String qrcode, String operation_act, String workcenter) {
         ResultSet result = null;
         List<HashMap<String, String>> listData = null;
         try {
@@ -215,7 +216,8 @@ public class SelectDB {
 
         return listData;
     }
-    public List<HashMap<String, String>> tranOut(String qrcode,String operation_act,String workcenter) {
+
+    public List<HashMap<String, String>> tranOut(String qrcode, String operation_act, String workcenter) {
         ResultSet result = null;
         List<HashMap<String, String>> listData = null;
         try {
