@@ -151,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            Toast.makeText(this, "Username : " + shareMember.getUsername() + "| Route : " + shareMember.getUserRoute(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Username : " + shareMember.getUsername() + " | Route : " + shareMember.getUserRoute(), Toast.LENGTH_SHORT).show();
         }
         if (item.getItemId() == 2) {
             AlertDialog.Builder builder =

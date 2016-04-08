@@ -23,7 +23,6 @@ android {
         applicationId "th.co.svi.shopfloor"
         minSdkVersion 15
         targetSdkVersion 23
-        generatedDensities = []
         versionCode 1
         versionName "1.0"
     }
@@ -32,15 +31,6 @@ android {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
-    }
-    aaptOptions {
-        additionalParameters "--no-version-vectors"
-    }
-
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
     }
 }
 
