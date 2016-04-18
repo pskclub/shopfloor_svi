@@ -1,6 +1,7 @@
 package th.co.svi.shopfloor.manager;
 
 import android.util.Log;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -41,14 +42,14 @@ public class InsertDB {
     }
 
     public boolean data_tranin(String qrcode, String route_operation, String workcenter, String orderqty,
-                               String regis_date, String USER_ID) {
+                               String regis_date, String USER_ID, String contrainer_id) {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 query = "INSERT INTO MOBILE_Shopfloor_TranIN(QR_CODE,Route_Operation,Item_Key,WorkCenter,Qty,Trans_Date,Regis_by," +
-                        "Regis_Date,Update_by,Update_Date)" +
+                        "Regis_Date,Update_by,Update_Date,contrainer_id)" +
                         " VALUES ('" + qrcode + "','" + route_operation + "','1','" + workcenter + "','" +
-                        orderqty + "','" + regis_date + "','" + USER_ID + "',GETDATE(),NULL,NULL)";
+                        orderqty + "','" + regis_date + "','" + USER_ID + "',GETDATE(),NULL,NULL,'" + contrainer_id + "')";
                 Statement stmt = con.createStatement();
                 stmt.executeQuery(query);
                 return true;
