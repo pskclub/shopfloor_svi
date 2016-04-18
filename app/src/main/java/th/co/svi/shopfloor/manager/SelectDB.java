@@ -35,7 +35,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                query = "SELECT * FROM MOBILE_USER WHERE USER_NAME = '" +
+                query = "SELECT * FROM MOBILE_USER WHERE USER_ID = '" +
                         username + "' AND USER_PASSWORD = '" +
                         password + "'";
                 Statement stmt = con.createStatement();
