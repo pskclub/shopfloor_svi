@@ -37,7 +37,7 @@ import th.co.svi.shopfloor.manager.ShareData;
 public class SendFragment extends Fragment {
     EditText txtID, edt_outputqty;
     TextView txt_workcenter, txt_nextcenter, txt_workorder, txt_plant, txt_project, txt_orderqty,
-            txt_inputqty, txt_starttime, txt_finishtime;
+            txt_inputqty, txt_starttime, txt_finishtime, txt_contrainer;
     FloatingActionButton fabQrcode;
     ImageButton btnSearch;
     String status_now;
@@ -151,6 +151,7 @@ public class SendFragment extends Fragment {
         txt_orderqty = (TextView) rootView.findViewById(R.id.txt_orderqty_send_job);
         txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_send_job);
         txt_starttime = (TextView) rootView.findViewById(R.id.txt_starttime_send_job);
+        txt_contrainer = (TextView) rootView.findViewById(R.id.txt_contrainer);
         fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
     }
@@ -170,8 +171,6 @@ public class SendFragment extends Fragment {
         nextcenter = "null";
         status = "0";
         status_save = "0";
-
-
         status_do = false;
         cardContent.setVisibility(View.GONE);
         if (qrcode.equals("")) {
@@ -273,8 +272,9 @@ public class SendFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
             if (status_do == true) {
+
                 Toast.makeText(getContext(), "save ok", Toast.LENGTH_SHORT).show();
-            }else {
+            } else {
                 Toast.makeText(getContext(), "save err", Toast.LENGTH_SHORT).show();
             }
         }
