@@ -221,7 +221,7 @@ public class CreateFragment extends Fragment {
                 final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
                 regis_date = date.toString();
                 insert = new InsertDB();
-                insert.data_master(txtID.getText().toString(), route_operation, workcenter, dataOrderResult.get("workorder"),
+                insert.data_master(txtID.getText().toString(), route_operation, workcenter,
                         dataOrderResult.get("orderqty"), member.getUserID());
                 insert.data_tranin(txtID.getText().toString(), dataOperationResult.get("route_operation"),
                         dataOperationResult.get("workcenter"), dataOrderResult.get("orderqty"), regis_date, member.getUserID(), "-1");

@@ -18,14 +18,14 @@ public class InsertDB {
 
     }
 
-    public boolean data_master(String qrcode, String route_operation, String workcenter,
-                               String workorder, String orderqty, String USER_ID) {
+    public boolean data_master(String workorder, String route_operation, String workcenter,
+                                String orderqty, String USER_ID) {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                query = "INSERT INTO MOBILE_Shopfloor_Master(QR_CODE,Route_Operation," +
-                        "WorkCenter,WorkOrder,Qty_WO,Status,Close_JobDate,Regis_by,Regis_Date,Update_by,Update_Date)" +
-                        " VALUES ('" + qrcode + "','" + route_operation + "','" + workcenter + "','" + workorder + "','" +
+                query = "INSERT INTO MOBILE_Shopfloor_Master(workorder,Route_Operation," +
+                        "WorkCenter,Qty_WO,Status,Close_JobDate,Regis_by,Regis_Date,Update_by,Update_Date)" +
+                        " VALUES ('" + workorder + "','" + route_operation + "','" + workcenter + "','" +
                         orderqty + "','0',NULL,'" + USER_ID + "',GETDATE(),NULL,NULL)";
                 Statement stmt = con.createStatement();
                 stmt.executeQuery(query);
@@ -41,14 +41,14 @@ public class InsertDB {
         return false;
     }
 
-    public boolean data_tranin(String qrcode, String route_operation, String workcenter, String orderqty,
+    public boolean data_tranin(String workorder, String route_operation, String workcenter, String orderqty,
                                String regis_date, String USER_ID, String contrainer_id) {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                query = "INSERT INTO MOBILE_Shopfloor_TranIN(QR_CODE,Route_Operation,Item_Key,WorkCenter,Qty,Trans_Date,Regis_by," +
+                query = "INSERT INTO MOBILE_Shopfloor_TranIN(workorder,Route_Operation,Item_Key,WorkCenter,Qty,Trans_Date,Regis_by," +
                         "Regis_Date,Update_by,Update_Date,contrainer_id)" +
-                        " VALUES ('" + qrcode + "','" + route_operation + "','1','" + workcenter + "','" +
+                        " VALUES ('" + workorder + "','" + route_operation + "','1','" + workcenter + "','" +
                         orderqty + "','" + regis_date + "','" + USER_ID + "',GETDATE(),NULL,NULL,'" + contrainer_id + "')";
                 Statement stmt = con.createStatement();
                 stmt.executeQuery(query);

@@ -69,13 +69,13 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT DISTINCT pl.Work_Order,pl.Plant,pl.Qty_Order,ISNULL(shop.Status,1) AS Status " +
+                query = "SELECT DISTINCT pl.workorder,pl.Plant,pl.Qty_Order,ISNULL(shop.Status,1) AS Status " +
                         "FROM Planning_Master AS pl LEFT OUTER JOIN MOBILE_Shopfloor_Master AS shop " +
-                        "ON pl.Work_Order = shop.QR_CODE AND shop.WorkCenter LIKE '" + USER_ROUTE + "%' " +
+                        "ON pl.workorder = shop.workorder AND shop.WorkCenter LIKE '" + USER_ROUTE + "%' " +
                         "WHERE pl.Date_Start_Plan >= '" + DatePlan + "'  " +
                         "AND pl.Date_Start_Plan < '" + DateTo + "'  " +
                         "AND pl.Plan_Week = DATEPART(wk,pl.Date_Start_Plan) " +
-                        "AND pl.Work_Order IN (SELECT DISTINCT WorkOrder FROM SAP_ORDER_OPERATION WHERE Work_Center LIKE '" + USER_ROUTE + "%') ";
+                        "AND pl.workorder IN (SELECT DISTINCT WorkOrder FROM SAP_ORDER_OPERATION WHERE Work_Center LIKE '" + USER_ROUTE + "%') ";
 
 
                 Statement stmt = con.createStatement();
@@ -115,7 +115,7 @@ public class SelectDB {
             if (con != null) {
                 listData = new ArrayList<>();
                 query = "SELECT * FROM MOBILE_Shopfloor_Master  WHERE Status = '0'  AND WorkCenter LIKE '" + USER_ROUTE +
-                        "%' ORDER BY QR_CODE";
+                        "%' ORDER BY workorder";
 
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -131,7 +131,7 @@ public class SelectDB {
             if (result != null && result.next()) {
                 do {
                     HashMap<String, String> planning = new HashMap<>();
-                    planning.put("QR_CODE", result.getString("QR_CODE"));
+                    planning.put("QR_CODE", result.getString("workorder"));
                     planning.put("WorkCenter", result.getString("WorkCenter"));
                     planning.put("Qty_WO", result.getString("Qty_WO"));
                     listData.add(planning);
@@ -190,7 +190,7 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT QR_CODE,Route_Operation,Item_Key,WorkCenter,CAST(Qty AS int) AS Qty,Trans_Date,Regis_by,Regis_Date,Update_by,Update_Date FROM MOBILE_Shopfloor_TranIN WHERE QR_CODE = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
+                query = "SELECT workorder,Route_Operation,Item_Key,WorkCenter,CAST(Qty AS int) AS Qty,Trans_Date,Regis_by,Regis_Date,Update_by,Update_Date FROM MOBILE_Shopfloor_TranIN WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
@@ -224,7 +224,7 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT * FROM MOBILE_Shopfloor_TranOUT WHERE QR_CODE = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
+                query = "SELECT * FROM MOBILE_Shopfloor_TranOUT WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
@@ -303,7 +303,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE QR_CODE = '" + qrcode + "' ORDER BY Route_Operation ";
+                query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE workorder = '" + qrcode + "' ORDER BY Route_Operation ";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
@@ -333,7 +333,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE QR_CODE = '" + qrcode + "' AND Route_Operation = '" + operationAct +
+                query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operationAct +
                         "' AND WorkCenter = '" + workCenter + "'";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
