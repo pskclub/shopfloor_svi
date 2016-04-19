@@ -69,13 +69,13 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT DISTINCT pl.Work_Order,pl.Plant,pl.Qty_Order,ISNULL(shop.Status,1) AS Status " +
+                query = "SELECT DISTINCT pl.workorder,pl.Plant,pl.Qty_Order,ISNULL(shop.Status,1) AS Status " +
                         "FROM Planning_Master AS pl LEFT OUTER JOIN MOBILE_Shopfloor_Master AS shop " +
-                        "ON pl.Work_Order = shop.workorder AND shop.WorkCenter LIKE '" + USER_ROUTE + "%' " +
+                        "ON pl.workorder = shop.workorder AND shop.WorkCenter LIKE '" + USER_ROUTE + "%' " +
                         "WHERE pl.Date_Start_Plan >= '" + DatePlan + "'  " +
                         "AND pl.Date_Start_Plan < '" + DateTo + "'  " +
                         "AND pl.Plan_Week = DATEPART(wk,pl.Date_Start_Plan) " +
-                        "AND pl.Work_Order IN (SELECT DISTINCT WorkOrder FROM SAP_ORDER_OPERATION WHERE Work_Center LIKE '" + USER_ROUTE + "%') ";
+                        "AND pl.workorder IN (SELECT DISTINCT WorkOrder FROM SAP_ORDER_OPERATION WHERE Work_Center LIKE '" + USER_ROUTE + "%') ";
 
 
                 Statement stmt = con.createStatement();
