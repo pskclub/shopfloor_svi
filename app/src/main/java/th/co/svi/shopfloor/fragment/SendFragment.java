@@ -1,5 +1,6 @@
 package th.co.svi.shopfloor.fragment;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,6 +28,7 @@ import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
+import th.co.svi.shopfloor.manager.InsertDB;
 import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
@@ -43,7 +45,7 @@ public class SendFragment extends Fragment {
     String status_now;
     String status_next;
     CardView cardContent;
-    boolean status_do = false;
+    boolean status_do = false, btnsave = false;
     String status;
     String status_save;
     String qrcode, workcenter, workcenter_check, nextcenter, nextoperation_act, checkcenter, checkoperation_act, operation_act, workorder, plant, project, orderqty, inputqty, outputqty = "0", starttime, finishtime, error;
@@ -172,6 +174,7 @@ public class SendFragment extends Fragment {
         status = "0";
         status_save = "0";
         status_do = false;
+        btnsave = false;
         cardContent.setVisibility(View.GONE);
         if (qrcode.equals("")) {
             builder.setMessage("Please, input or scan QR Code");
@@ -224,6 +227,7 @@ public class SendFragment extends Fragment {
                             builder.setPositiveButton("OK", null);
                             builder.show();
                         } else {
+                            btnsave = true;
                             cardContent.setVisibility(View.VISIBLE);
                             txt_workcenter.setText(workcenter_true + " - " + operation_act);
                             txt_nextcenter.setText(workcenter_trueNext + " - " + operation_actNext);
@@ -271,8 +275,45 @@ public class SendFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            if (status_do == true) {
+            if (btnsave == true) {
+                SelectDB select = new SelectDB();
+                HashMap<String, String> resultMobileMaster = select.data_master(qrcode, operation_act, workcenter);
+                if (resultMobileMaster.get("status_now").equals("9")) {
+                    builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
+                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            getActivity().finish();
+                        }
+                    });
+                    builder.show();
+                } else {
+                    List<HashMap<String, String>> tranIn = select.tranIn(qrcode, operation_act, workcenter);
+                    List<HashMap<String, String>> tranOut = select.tranOut(qrcode, operation_act, workcenter);
+                    for (HashMap<String, String> result : tranIn) {
+                        sumTranIn = sumTranIn + Integer.parseInt(result.get("qty"));
+                    }// END WHILE rs_operation
+                    for (HashMap<String, String> result : tranOut) {
+                        sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
 
+                    }// END WHILE rs_operation
+                    sumTranResult = sumTranIn - sumTranOut;
+                    if (Integer.parseInt(edt_outputqty.getText().toString()) > sumTranResult) {
+                        builder.setMessage("จำนวนเกิน");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                getActivity().finish();
+                            }
+                        });
+                        builder.show();
+                        return false;
+                    } else {
+                        InsertDB insert = new InsertDB();
+
+                    }
+
+                }
                 Toast.makeText(getContext(), "save ok", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "save err", Toast.LENGTH_SHORT).show();

@@ -84,7 +84,7 @@ public class SelectDB {
                 return listData;
             }
         } catch (SQLException e) {
-            Log.e("DbSelErr", e.getMessage());
+            Log.e("DbSelErrPlan", e.getMessage());
         } catch (NullPointerException e) {
             Log.e("DbSelNull", e.getMessage());
         }
@@ -101,7 +101,7 @@ public class SelectDB {
                 return listData;
             }
         } catch (SQLException e) {
-            Log.e("DbSelErr", e.getMessage());
+            Log.e("DbSelErrPlan", e.getMessage());
         }
 
         return listData;
@@ -123,7 +123,7 @@ public class SelectDB {
                 return listData;
             }
         } catch (SQLException e) {
-            Log.e("DbSelErr", e.getMessage());
+            Log.e("DbSelErrPendding", e.getMessage());
         } catch (NullPointerException e) {
             Log.e("DbSelNull", e.getMessage());
         }
@@ -139,7 +139,7 @@ public class SelectDB {
                 return listData;
             }
         } catch (SQLException e) {
-            Log.e("DbSelErr", e.getMessage());
+            Log.e("DbSelErrPendding", e.getMessage());
         }
 
         return listData;
@@ -190,7 +190,8 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT workorder,Route_Operation,Item_Key,WorkCenter,CAST(Qty AS int) AS Qty,Trans_Date,Regis_by,Regis_Date,Update_by,Update_Date FROM MOBILE_Shopfloor_TranIN WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
+                query = "SELECT workorder,Route_Operation,Item_Key,WorkCenter,CAST(Qty AS int) AS Qty,Trans_Date,Regis_by,Regis_Date,Update_by,Update_Date " +
+                        "FROM MOBILE_Shopfloor_TranIN WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
