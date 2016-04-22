@@ -189,8 +189,7 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT workorder,Route_Operation,Item_Key,WorkCenter,CAST(Qty AS int) AS Qty,Trans_Date,Regis_by,Regis_Date,Update_by,Update_Date " +
-                        "FROM MOBILE_Shopfloor_TranIN WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
+                query = "SELECT * FROM MOBILE_Shopfloor_TranIN WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operation_act + "' AND WorkCenter = '" + workcenter + "'";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {

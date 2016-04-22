@@ -165,7 +165,9 @@ public class SendFragment extends Fragment {
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
     }
 
-    public void sendJob(final String qrcode) {
+    public void sendJob(final String qrcodein) {
+        qrcode = qrcodein;
+        workorder = qrcodein;
         qty_total = 0;
         qty_input = 0;
         qty_output = 0;
@@ -314,7 +316,9 @@ public class SendFragment extends Fragment {
 
                     }// END WHILE rs_operation
                     sumTranResult = sumTranIn - sumTranOut;
+                    Toast.makeText(getActivity(),sumTranOut+" out"+sumTranIn+" in"+sumTranResult+" sum",Toast.LENGTH_SHORT).show();
                     if (Integer.parseInt(edt_outputqty.getText().toString()) > sumTranResult) {
+
                         builder.setMessage("จำนวนเกิน");
                         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                             @Override
@@ -358,6 +362,7 @@ public class SendFragment extends Fragment {
 
                     }
                     Toast.makeText(getContext(), "save ok", Toast.LENGTH_SHORT).show();
+                    getActivity().finish();
                 }
             } else {
                 Toast.makeText(getContext(), "save err", Toast.LENGTH_SHORT).show();
