@@ -64,5 +64,28 @@ public class InsertDB {
         return false;
     }
 
+    public boolean data_tranout(String workorder, String route_operation, String workcenter, String qty,
+                               String regis_date, String USER_ID, String contrainer_id,String item_key, String scrap) {
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                query = "INSERT INTO MOBILE_Shopfloor_TranOut(workorder,Route_Operation,Item_Key,WorkCenter,Qty,Trans_Date,Regis_by," +
+                        "Regis_Date,Update_by,Update_Date,contrainer_id)" +
+                        " VALUES ('" + workorder + "','" + route_operation + "','"+ item_key +"','" + workcenter + "','" +
+                        qty + "','" + regis_date + "','" + USER_ID + "',GETDATE(),NULL,NULL,'" + contrainer_id + "')";
+                Statement stmt = con.createStatement();
+                stmt.executeQuery(query);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        return false;
+    }
+
 
 }

@@ -182,7 +182,6 @@ public class SelectDB {
     }
 
 
-
     public List<HashMap<String, String>> tranIn(String qrcode, String operation_act, String workcenter) {
         ResultSet result = null;
         List<HashMap<String, String>> listData = null;
@@ -349,8 +348,15 @@ public class SelectDB {
         try {
             if (result != null && result.next()) {
                 listData = new HashMap<>();
+                listData.put("workorder", result.getString("workorder"));
+                listData.put("route_operation", result.getString("route_operation"));
+                listData.put("qty_wo", result.getString("qty_wo"));
                 listData.put("status_now", result.getString("Status"));
+                listData.put("close_jobdate", result.getString("close_jobdate"));
+                listData.put("regis_by", result.getString("regis_by"));
                 listData.put("starttime", result.getString("Regis_Date"));
+                listData.put("update_by", result.getString("update_by"));
+                listData.put("update_date", result.getString("update_date"));
                 return listData;
             }
         } catch (SQLException e) {
@@ -425,6 +431,36 @@ public class SelectDB {
         }
 
         return listData;
+    }
+
+    public int countItemKey(String workorder, String route_operation, String workcenter ) {
+        ResultSet result = null;
+        HashMap<String, Integer> listData = new HashMap<>();
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                query = "SELECT * FROM MOBILE_SHOPFLOOR_TRANIN WHERE workorder = '" +
+                        workorder + "' AND route_operation = '" +
+                        route_operation + "' AND workcenter = '"+ workcenter +"' order by item_key desc  ";
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                listData.put("count", result.getInt("item_key"));
+                return listData.get("count");
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+        return 0;
     }
 
 }
