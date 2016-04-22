@@ -48,8 +48,10 @@ public class SendFragment extends Fragment {
     boolean status_do = false, btnsave = false;
     String status;
     String status_save;
-    String qrcode, workcenter, workcenter_check, nextcenter, nextoperation_act, checkcenter, checkoperation_act, operation_act, workorder, plant, project, orderqty, inputqty, outputqty = "0", starttime, finishtime, error;
-    String data_operation, data_master, data_operation1, data_tranout, data_tranin, data_tranin_next, data_order, data_output, data_input, data_update_master, data_insert_master, data_check_master;
+    String qrcode, workcenter, workcenter_check, nextcenter, nextoperation_act, checkcenter, checkoperation_act,
+            operation_act, workorder, plant, project, orderqty, inputqty, outputqty = "0", starttime, finishtime, error;
+    String data_operation, data_master, data_operation1, data_tranout, data_tranin, data_tranin_next,
+            data_order, data_output, data_input, data_update_master, data_insert_master, data_check_master;
     float x, qty_output, output, qty_output_total, qty_order, qty_total, qty_check_output;
     int keyin, keyout, qty_input;
     String workcenter_true, nextworkcenter_true;
