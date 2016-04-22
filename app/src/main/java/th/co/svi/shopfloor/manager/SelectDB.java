@@ -351,7 +351,7 @@ public class SelectDB {
                 listData.put("workorder", result.getString("workorder"));
                 listData.put("route_operation", result.getString("route_operation"));
                 listData.put("qty_wo", result.getString("qty_wo"));
-                listData.put("status_now", result.getString("Status"));
+                listData.put("status_now", result.getString("status"));
                 listData.put("close_jobdate", result.getString("close_jobdate"));
                 listData.put("regis_by", result.getString("regis_by"));
                 listData.put("starttime", result.getString("Regis_Date"));
