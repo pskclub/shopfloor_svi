@@ -8,6 +8,8 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
+import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -21,6 +23,7 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.otto.Subscribe;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -31,6 +34,7 @@ import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.InsertDB;
 import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
+import th.co.svi.shopfloor.manager.UpdateDB;
 
 
 /**
@@ -56,9 +60,10 @@ public class SendFragment extends Fragment {
     int keyin, keyout, qty_input;
     String workcenter_true, nextworkcenter_true;
     String workcenterNext, operation_actNext, workcenter_trueNext;
-    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0;
+    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, datamaster_status = 0;
     ShareData member;
     private AlertDialog.Builder builder = null;
+    private int itemKeyIn, itemKeyOut;
 
     public SendFragment() {
         super();
@@ -175,6 +180,7 @@ public class SendFragment extends Fragment {
         nextcenter = "null";
         status = "0";
         status_save = "0";
+        datamaster_status = 0;
         status_do = false;
         btnsave = false;
         cardContent.setVisibility(View.GONE);
@@ -194,9 +200,17 @@ public class SendFragment extends Fragment {
                     if (member.getUserRoute().equals(workcenter)) { //CHECK USER_ROUTE AND WORK CENTER
                         int index2 = index + 1;
                         status_do = true;
-                        workcenterNext = sapResult.get(index2).get("workcenter");
-                        operation_actNext = sapResult.get(index2).get("operation_act");
-                        workcenter_trueNext = sapResult.get(index2).get("workcenter_true");
+                        try {
+                            workcenterNext = sapResult.get(index2).get("workcenter");
+                            operation_actNext = sapResult.get(index2).get("operation_act");
+                            workcenter_trueNext = sapResult.get(index2).get("workcenter_true");
+                        } catch (RuntimeException e) {
+                            Log.e("null", e.getMessage());
+                            workcenterNext = null;
+                            operation_actNext = null;
+                            workcenter_trueNext = null;
+                        }
+
                         break;
                     } else {
                         workcenter = null;
@@ -310,18 +324,46 @@ public class SendFragment extends Fragment {
                         });
                         builder.show();
                         return false;
+                    } else if (sumTranResult == 0) {
+                        builder.setMessage("ส่งครบแล้ว");
+                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                getActivity().finish();
+                            }
+                        });
+                        builder.show();
+                        return false;
                     } else {
                         InsertDB insert = new InsertDB();
+                        UpdateDB update = new UpdateDB();
+                        Date d = new Date();
+                        final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
+                        if (workcenterNext != null) {
+                            itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
+                            insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
+                                    date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyIn + 1)));
+                        } else {
+                            itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
+                            insert.data_tranout(workorder, operation_act, member.getUserRoute(), edt_outputqty.getText().toString(), date.toString(),
+                                    member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
+
+                        }
+                        if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + Integer.parseInt(edt_outputqty.getText().toString())))) {
+                            update.dataMaster(workorder, operation_act, workcenter, "9", date.toString(), member.getUserID());
+                        } else {
+                            update.dataMaster(workorder, operation_act, workcenter, "0", date.toString(), member.getUserID());
+                        }
+
 
                     }
-
+                    Toast.makeText(getContext(), "save ok", Toast.LENGTH_SHORT).show();
                 }
-                Toast.makeText(getContext(), "save ok", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(getContext(), "save err", Toast.LENGTH_SHORT).show();
             }
-        }
 
+        }
         return true;
     }
 
