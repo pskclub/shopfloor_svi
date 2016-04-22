@@ -433,7 +433,7 @@ public class SelectDB {
         return listData;
     }
 
-    public int countItemKeyIn(String workorder, String route_operation, String workcenter ) {
+    public int countItemKeyIn(String workorder, String route_operation, String workcenter) {
         ResultSet result = null;
         HashMap<String, Integer> listData = new HashMap<>();
         try {
@@ -441,7 +441,37 @@ public class SelectDB {
             if (con != null) {
                 query = "SELECT * FROM MOBILE_SHOPFLOOR_TRANIN WHERE workorder = '" +
                         workorder + "' AND route_operation = '" +
-                        route_operation + "' AND workcenter = '"+ workcenter +"' order by item_key desc  ";
+                        route_operation + "' AND workcenter = '" + workcenter + "' order by item_key desc  ";
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return 0;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                listData.put("count", result.getInt("item_key"));
+                return listData.get("count");
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+        return 0;
+    }
+
+    public int countItemKeyOut(String workorder, String route_operation, String workcenter) {
+        ResultSet result = null;
+        HashMap<String, Integer> listData = new HashMap<>();
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                query = "SELECT * FROM MOBILE_SHOPFLOOR_TRANOUT WHERE workorder = '" +
+                        workorder + "' AND route_operation = '" +
+                        route_operation + "' AND workcenter = '" + workcenter + "' order by item_key desc  ";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
