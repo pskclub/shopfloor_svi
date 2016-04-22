@@ -433,7 +433,7 @@ public class SelectDB {
         return listData;
     }
 
-    public int countItemKey(String workorder, String route_operation, String workcenter ) {
+    public int countItemKeyIn(String workorder, String route_operation, String workcenter ) {
         ResultSet result = null;
         HashMap<String, Integer> listData = new HashMap<>();
         try {
