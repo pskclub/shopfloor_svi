@@ -64,6 +64,7 @@ public class SendFragment extends Fragment {
     ShareData member;
     private AlertDialog.Builder builder = null;
     private int itemKeyIn, itemKeyOut;
+    HashMap<String, String> orderResult = null;
 
     public SendFragment() {
         super();
@@ -238,7 +239,7 @@ public class SendFragment extends Fragment {
 
                         }// END WHILE rs_operation
                         sumTranResult = sumTranIn - sumTranOut;
-                        HashMap<String, String> orderResult = select.data_order(qrcode);
+                        orderResult = select.data_order(qrcode);
                         if (orderResult == null) {
                             //txt_error.setText("Find not found work order : "+qrcode+" in database (Order Data) !!!  Pls., contact administrator (MIS)");
                             builder.setMessage("Find not found work order : " + qrcode + " in database (Order Data) !!!\nPlease, contact administrator (MIS)");
@@ -294,6 +295,8 @@ public class SendFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
             if (btnsave == true) {
+                sumTranIn = 0;
+                sumTranOut = 0;
                 SelectDB select = new SelectDB();
                 HashMap<String, String> resultMobileMaster = select.data_master(qrcode, operation_act, workcenter);
                 if (resultMobileMaster.get("status_now").equals("9")) {
@@ -308,8 +311,8 @@ public class SendFragment extends Fragment {
                 } else {
                     List<HashMap<String, String>> tranIn = select.tranIn(qrcode, operation_act, workcenter);
                     List<HashMap<String, String>> tranOut = select.tranOut(qrcode, operation_act, workcenter);
-                    for (HashMap<String, String> result : tranIn) {
-                        sumTranIn = sumTranIn + Integer.parseInt(result.get("qty"));
+                    for (HashMap<String, String> resultx : tranIn) {
+                        sumTranIn = sumTranIn + Integer.parseInt(resultx.get("qty"));
                     }// END WHILE rs_operation
                     for (HashMap<String, String> result : tranOut) {
                         sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
@@ -347,16 +350,26 @@ public class SendFragment extends Fragment {
                             itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
                             insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
                                     date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyIn + 1)));
-                        } else {
                             itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
-                            insert.data_tranout(workorder, operation_act, member.getUserRoute(), edt_outputqty.getText().toString(), date.toString(),
+                            insert.data_tranout(workorder, operation_act, member.getUserRoute(),edt_outputqty.getText().toString(), date.toString(),
+                                    member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
+                            HashMap<String, String> resultMobileMasternext = select.data_master(qrcode, operation_actNext, workcenterNext);
+                            if(resultMobileMasternext == null){
+                               insert.data_master(workorder,operation_actNext,workcenterNext,orderResult.get("orderqty"),member.getUserID());
+                            }
+                        } else {
+                            itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
+                            insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
+                                    date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyIn + 1)));
+                            itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
+                            insert.data_tranout(workorder, operation_act, member.getUserRoute(),edt_outputqty.getText().toString() , date.toString(),
                                     member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
 
                         }
                         if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + Integer.parseInt(edt_outputqty.getText().toString())))) {
                             update.dataMaster(workorder, operation_act, workcenter, "9", date.toString(), member.getUserID());
                         } else {
-                            update.dataMaster(workorder, operation_act, workcenter, "0", date.toString(), member.getUserID());
+                            update.dataMaster(workorder, operation_act, workcenter, "0", null, member.getUserID());
                         }
 
 
