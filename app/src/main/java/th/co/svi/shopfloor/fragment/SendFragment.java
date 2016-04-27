@@ -347,7 +347,7 @@ public class SendFragment extends Fragment {
                         Date d = new Date();
                         final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
                         if (workcenterNext != null) {
-                            itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
+                            itemKeyIn = select.countItemKeyIn(workorder, operation_act, workcenterNext);
                             insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
                                     date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyIn + 1)));
                             itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
@@ -360,7 +360,7 @@ public class SendFragment extends Fragment {
                         } else {
                             itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
                             insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
-                                    date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyIn + 1)));
+                                    date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf(itemKeyIn + 1));
                             itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
                             insert.data_tranout(workorder, operation_act, member.getUserRoute(),edt_outputqty.getText().toString() , date.toString(),
                                     member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
