@@ -25,7 +25,7 @@ public class JobPlanListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return Data.size();
+        return (Data == null) ? 0 : Data.size();
     }
 
     @Override

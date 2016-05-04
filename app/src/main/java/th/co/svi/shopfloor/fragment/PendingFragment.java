@@ -19,6 +19,7 @@ import com.squareup.otto.Subscribe;
 import java.util.HashMap;
 import java.util.List;
 
+import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.SendActivity;
 import th.co.svi.shopfloor.adapter.JobPendingAdapter;
@@ -34,11 +35,12 @@ import th.co.svi.shopfloor.manager.ShareData;
 public class PendingFragment extends Fragment {
     private ShareData member;
     private GridView gvPlan;
-    private TextView tvErr;
     private SwipeRefreshLayout layoutRefresh;
     private PenddingTask loadPlanAsync;
     private JobPendingAdapter pendingAdapter = null;
     private List<HashMap<String, String>> pendingList = null;
+    private Switcher switcher;
+    private boolean first = true;
 
     public PendingFragment() {
         super();
@@ -87,9 +89,16 @@ public class PendingFragment extends Fragment {
         // Note: State of variable initialized here could not be saved
         //       in onSavedInstanceState
         gvPlan = (GridView) rootView.findViewById(R.id.gvPlan);
-        tvErr = (TextView) rootView.findViewById(R.id.tvErr);
         layoutRefresh = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
         layoutRefresh.setColorSchemeResources(R.color.colorPrimary);
+        switcher = new Switcher.Builder(getContext())
+                .addContentView(rootView.findViewById(R.id.hide)) //content member
+                .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
+                .addProgressView(rootView.findViewById(R.id.progress_view)) //progress view member
+                .setErrorLabel((TextView) rootView.findViewById(R.id.error_label)) // TextView within your error member group that you want to change
+                .setProgressLabel((TextView) rootView.findViewById(R.id.progress_label)) // TextView within your progress member group that you want to change
+                .addEmptyView(rootView.findViewById(R.id.empty_view)) //empty placeholder member
+                .build();
     }
 
     @Override
@@ -156,14 +165,22 @@ public class PendingFragment extends Fragment {
      * inner Class Zone
      **********************/
     private class PenddingTask extends AsyncTask<Void, Void, Boolean> {
-        boolean ERR = false;
+
+        @Override
+        protected void onPreExecute() {
+            if (first) {
+                layoutRefresh.setEnabled(false);
+                switcher.showProgressView("Loading data. Please wait.");
+                first = false;
+            }
+
+        }
 
         @Override
         protected Boolean doInBackground(Void... params) {
             SelectDB plan = new SelectDB();
             pendingList = plan.pending(member.getUserRoute());
             if (pendingList != null) {
-                ERR = true;
                 return true;
             } else {
                 return false;
@@ -175,20 +192,20 @@ public class PendingFragment extends Fragment {
         protected void onPostExecute(final Boolean success) {
             loadPlanAsync = null;
             layoutRefresh.setRefreshing(false);
+            layoutRefresh.setEnabled(true);
             if (success) {
                 if (pendingList.size() == 0) {
-                    tvErr.setText("NO DATA PENDING");
-                    tvErr.setVisibility(View.VISIBLE);
-                    pendingAdapter = new JobPendingAdapter(pendingList);
-                    gvPlan.setAdapter(pendingAdapter);
+                    gvPlan.setAdapter(null);
+                    switcher.showEmptyView();
                 } else {
-                    tvErr.setVisibility(View.GONE);
                     pendingAdapter = new JobPendingAdapter(pendingList);
                     gvPlan.setAdapter(pendingAdapter);
+                    switcher.showContentView();
                 }
+
             } else {
-                tvErr.setText(R.string.server_fail);
-                Toast.makeText(getContext(), R.string.server_fail, Toast.LENGTH_SHORT).show();
+                gvPlan.setAdapter(null);
+                switcher.showErrorView("Can not connect to Server");
             }
         }
 

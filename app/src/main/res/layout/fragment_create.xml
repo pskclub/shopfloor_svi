@@ -6,7 +6,9 @@
     xmlns:card_view="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+    <include layout="@layout/view_progress" />
 
+    <include layout="@layout/view_error" />
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -251,44 +253,7 @@
 
                 </LinearLayout>
 
-                <LinearLayout
-                    android:id="@+id/linearLayout18"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_above="@+id/linearLayout17"
-                    android:layout_alignLeft="@+id/linearLayout17"
-                    android:layout_alignParentBottom="false"
-                    android:layout_alignParentLeft="false"
-                    android:layout_alignParentStart="false"
-                    android:layout_alignParentTop="false"
-                    android:layout_alignRight="@+id/linearLayout17"
-                    android:layout_alignStart="@id/linearLayout17"
-                    android:orientation="horizontal">
 
-                    <TextView
-                        android:id="@+id/txt_error_start"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_weight="0.6"
-                        android:textSize="15dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/linearLayout17"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentBottom="true"
-                    android:layout_gravity="center_vertical"
-                    android:layout_marginBottom="16dp"
-                    android:layout_marginLeft="16dp"
-                    android:layout_marginRight="16dp"
-                    android:layout_marginTop="5dp"
-                    android:gravity="center_horizontal|right"
-                    android:orientation="horizontal"
-                    android:weightSum="1">
-
-                </LinearLayout>
             </android.support.v7.widget.CardView>
         </LinearLayout>
     </ScrollView>

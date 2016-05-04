@@ -23,6 +23,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
+import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.MainActivity;
 import th.co.svi.shopfloor.adapter.JobPlanListAdapter;
@@ -37,7 +38,6 @@ import static android.support.v4.app.ActivityCompat.invalidateOptionsMenu;
  */
 public class MainFragment extends Fragment {
     private GridView gvPlan;
-    private TextView tvErr;
     String txtDate = null;
     String txtDateTo = null;
     private int mYear = 0, mMonth = 0, mDay = 0;
@@ -45,7 +45,9 @@ public class MainFragment extends Fragment {
     private List<HashMap<String, String>> planList = null;
     private ShareData member;
     private PlanTask loadPlanAsync;
-    SwipeRefreshLayout layoutRefresh;
+    private Switcher switcher;
+    private boolean first = true;
+    private SwipeRefreshLayout layoutRefresh;
 
     public MainFragment() {
         super();
@@ -99,9 +101,16 @@ public class MainFragment extends Fragment {
         // Note: State of variable initialized here could not be saved
         //       in onSavedInstanceState
         gvPlan = (GridView) rootView.findViewById(R.id.gvPlan);
-        tvErr = (TextView) rootView.findViewById(R.id.tvErr);
         layoutRefresh = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
         layoutRefresh.setColorSchemeResources(R.color.colorPrimary);
+        switcher = new Switcher.Builder(getContext())
+                .addContentView(rootView.findViewById(R.id.hide)) //content member
+                .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
+                .addProgressView(rootView.findViewById(R.id.progress_view)) //progress view member
+                .setErrorLabel((TextView) rootView.findViewById(R.id.error_label)) // TextView within your error member group that you want to change
+                .setProgressLabel((TextView) rootView.findViewById(R.id.progress_label)) // TextView within your progress member group that you want to change
+                .addEmptyView(rootView.findViewById(R.id.empty_view)) //empty placeholder member
+                .build();
     }
 
     @Override
@@ -170,6 +179,15 @@ public class MainFragment extends Fragment {
     }
 
     private class PlanTask extends AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected void onPreExecute() {
+            if (first) {
+                layoutRefresh.setEnabled(false);
+                switcher.showProgressView("Loading data. Please wait.");
+                first = false;
+            }
+
+        }
 
         @Override
         protected Boolean doInBackground(Void... params) {
@@ -187,20 +205,19 @@ public class MainFragment extends Fragment {
         protected void onPostExecute(Boolean success) {
             loadPlanAsync = null;
             layoutRefresh.setRefreshing(false);
+            layoutRefresh.setEnabled(true);
             if (success) {
                 if (planList.size() == 0) {
-                    tvErr.setText("NO DATA \n" + MainActivity.txtDate);
-                    tvErr.setVisibility(View.VISIBLE);
-                    planAdapter = new JobPlanListAdapter(planList);
-                    gvPlan.setAdapter(planAdapter);
+                    gvPlan.setAdapter(null);
+                    switcher.showEmptyView();
                 } else {
-                    tvErr.setVisibility(View.GONE);
                     planAdapter = new JobPlanListAdapter(planList);
                     gvPlan.setAdapter(planAdapter);
+                    switcher.showContentView();
                 }
             } else {
-                tvErr.setText(R.string.server_fail);
-                Toast.makeText(getContext(), R.string.server_fail, Toast.LENGTH_SHORT).show();
+                gvPlan.setAdapter(null);
+                switcher.showErrorView("Can not connect to Server");
             }
         }
 

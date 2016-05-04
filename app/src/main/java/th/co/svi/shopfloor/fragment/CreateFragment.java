@@ -26,6 +26,7 @@ import com.squareup.otto.Subscribe;
 import java.util.Date;
 import java.util.HashMap;
 
+import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
 import th.co.svi.shopfloor.bus.ResultBus;
@@ -49,10 +50,11 @@ public class CreateFragment extends Fragment {
     private String regis_date;
     private int status_insert = 0;
     private AlertDialog.Builder builder = null;
-    String workcenter, route_operation;
-    SelectDB select;
-    InsertDB insert;
-    HashMap<String, String> dataMasterResult, dataOperationResult, dataOrderResult;
+    private String workcenter, route_operation;
+    private SelectDB select;
+    private InsertDB insert;
+    private HashMap<String, String> dataMasterResult, dataOperationResult, dataOrderResult;
+    private Switcher switcher;
 
     public CreateFragment() {
         super();
@@ -109,6 +111,14 @@ public class CreateFragment extends Fragment {
         txt_projectno = (TextView) rootView.findViewById(R.id.txt_projectno_start);
         txt_orderqty = (TextView) rootView.findViewById(R.id.txt_orderqty_start);
         txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_start);
+        switcher = new Switcher.Builder(getContext())
+                .addContentView(rootView.findViewById(R.id.cardContent)) //content member
+                .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
+                .addProgressView(rootView.findViewById(R.id.progress_view)) //progress view member
+                .setErrorLabel((TextView) rootView.findViewById(R.id.error_label)) // TextView within your error member group that you want to change
+                .setProgressLabel((TextView) rootView.findViewById(R.id.progress_label)) // TextView within your progress member group that you want to change
+                .build();
+        cardContent.setVisibility(View.GONE);
     }
 
     @Override
@@ -158,42 +168,37 @@ public class CreateFragment extends Fragment {
 
     private void startJob() {
         Date d = new Date();
+        switcher.showProgressView("");
         final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
         regis_date = date.toString();
         if (txtID.getText().toString().equals("")) {
-            Toast.makeText(getActivity(), "Please, input or scan QR Code", Toast.LENGTH_SHORT).show();
+            switcher.showErrorView("Please, input or scan QR Code");
         } else {
             select = new SelectDB();
             dataMasterResult = select.data_master(txtID.getText().toString());
             if (dataMasterResult != null) {
-                builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() +
+                switcher.showErrorView("Sorry! Work Order : " + txtID.getText().toString() +
                         " Start job complete.\nPlease, input new Work Order");
-                builder.setPositiveButton("OK", null);
-                builder.show();
             } else {
                 dataOperationResult = select.data_operation(txtID.getText().toString());
                 if (dataOperationResult != null) {
                     workcenter = dataOperationResult.get("workcenter");
                     route_operation = dataOperationResult.get("route_operation");
                     if (!member.getUserRoute().equals(workcenter)) {
-                        builder.setMessage("Sorry! Work Order : " + txtID.getText().toString() +
+                        switcher.showErrorView("Sorry! Work Order : " + txtID.getText().toString() +
                                 " don\'t pass operation : " + member.getUserRoute());
-                        builder.setPositiveButton("OK", null);
-                        builder.show();
 
                     } else {
                         dataOrderResult = select.data_order(txtID.getText().toString());
                         if (dataOrderResult != null) {
                             status_insert = 1;
                         } else {
-                            builder.setMessage("Not found work order : \" + txtID.getText().toString() +\n" +
+                            switcher.showErrorView("Not found work order : \" + txtID.getText().toString() +\n" +
                                     " \" in database (Order Data) !!! \n" +
                                     "Please, contact administrator (MIS)");
-                            builder.setPositiveButton("OK", null);
-                            builder.show();
 
                         }
-                        cardContent.setVisibility(View.VISIBLE);
+                        switcher.showContentView();
                         txt_workcenter.setText(route_operation + " - " + workcenter);
                         txt_workorder.setText(dataOrderResult.get("workorder"));
                         txt_plant.setText(dataOrderResult.get("plant"));
@@ -203,11 +208,8 @@ public class CreateFragment extends Fragment {
 
                     }
                 } else {
-                    //txt_error.setText("Find not found work order : "+qrcode+" in database (Operation Data) !!!  Pls., contact administrator (MIS)");
-                    builder.setMessage("Not found work order : " + txtID.getText().toString() +
+                    switcher.showErrorView("Not found work order : " + txtID.getText().toString() +
                             " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
-                    builder.setPositiveButton("OK", null);
-                    builder.show();
                 }
             }
         }
@@ -224,7 +226,7 @@ public class CreateFragment extends Fragment {
                 insert.data_master(txtID.getText().toString(), route_operation, workcenter,
                         dataOrderResult.get("orderqty"), member.getUserID());
                 insert.data_tranin(txtID.getText().toString(), dataOperationResult.get("route_operation"),
-                        dataOperationResult.get("workcenter"), dataOrderResult.get("orderqty"), regis_date, member.getUserID(), "-1","1");
+                        dataOperationResult.get("workcenter"), dataOrderResult.get("orderqty"), regis_date, member.getUserID(), "-1", "1");
                 Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
                 getActivity().setResult(1);
                 getActivity().finish();

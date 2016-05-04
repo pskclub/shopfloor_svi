@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
+import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
 import th.co.svi.shopfloor.bus.ResultBus;
@@ -41,30 +42,23 @@ import th.co.svi.shopfloor.manager.UpdateDB;
  * Created by nuuneoi on 11/16/2014.
  */
 public class SendFragment extends Fragment {
-    EditText txtID, edt_outputqty;
     TextView txt_workcenter, txt_nextcenter, txt_workorder, txt_plant, txt_project, txt_orderqty,
-            txt_inputqty, txt_starttime, txt_finishtime, txt_contrainer;
+            txt_inputqty, txt_starttime, txt_contrainer;
     FloatingActionButton fabQrcode;
     ImageButton btnSearch;
-    String status_now;
-    String status_next;
     CardView cardContent;
+    EditText txtID, edt_outputqty;
     boolean status_do = false, btnsave = false;
-    String status;
-    String status_save;
-    String qrcode, workcenter, workcenter_check, nextcenter, nextoperation_act, checkcenter, checkoperation_act,
-            operation_act, workorder, plant, project, orderqty, inputqty, outputqty = "0", starttime, finishtime, error;
-    String data_operation, data_master, data_operation1, data_tranout, data_tranin, data_tranin_next,
-            data_order, data_output, data_input, data_update_master, data_insert_master, data_check_master;
-    float x, qty_output, output, qty_output_total, qty_order, qty_total, qty_check_output;
-    int keyin, keyout, qty_input;
-    String workcenter_true, nextworkcenter_true;
-    String workcenterNext, operation_actNext, workcenter_trueNext;
-    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, datamaster_status = 0;
+    String workcenter = null, operation_act = null, workorder = null, plant = null, project = null, orderqty = null,
+            starttime = null, workcenterNext = null, workcenter_true = null, operation_actNext = null, workcenter_trueNext = null;
+    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, itemKeyIn = 0, itemKeyOut = 0;
     ShareData member;
+    SelectDB select;
+    UpdateDB update;
+    InsertDB insert;
     private AlertDialog.Builder builder = null;
-    private int itemKeyIn, itemKeyOut;
     HashMap<String, String> orderResult = null;
+    private Switcher switcher;
 
     public SendFragment() {
         super();
@@ -83,6 +77,7 @@ public class SendFragment extends Fragment {
         super.onCreate(savedInstanceState);
         init(savedInstanceState);
         setHasOptionsMenu(true);
+        workorder = getArguments().getString("work_order");
         builder = new AlertDialog.Builder(this.getActivity());
         if (savedInstanceState != null)
             onRestoreInstanceState(savedInstanceState);
@@ -93,10 +88,9 @@ public class SendFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_send, container, false);
         initInstances(rootView, savedInstanceState);
-        member = new ShareData("MEMBER");
-        if (getArguments().getString("work_order") != null) {
-            txtID.setText(getArguments().getString("work_order"));
-            sendJob(txtID.getText().toString());
+        if (workorder != null) {
+            txtID.setText(workorder);
+            sendJob();
         }
 
         fabQrcode.setOnClickListener(btnOnClickListener);
@@ -139,7 +133,8 @@ public class SendFragment extends Fragment {
             if (!(result.getContents() == null)) {
                 txtID.setText(result.getContents());
                 txtID.setSelection(txtID.getText().length());
-                sendJob(txtID.getText().toString());
+                workorder = txtID.getText().toString();
+                sendJob();
 
             }
         }
@@ -164,36 +159,45 @@ public class SendFragment extends Fragment {
         txt_contrainer = (TextView) rootView.findViewById(R.id.txt_contrainer);
         fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
+        switcher = new Switcher.Builder(getContext())
+                .addContentView(rootView.findViewById(R.id.cardContent)) //content member
+                .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
+                .addProgressView(rootView.findViewById(R.id.progress_view)) //progress view member
+                .setErrorLabel((TextView) rootView.findViewById(R.id.error_label)) // TextView within your error member group that you want to change
+                .setProgressLabel((TextView) rootView.findViewById(R.id.progress_label)) // TextView within your progress member group that you want to change
+                .build();
+        cardContent.setVisibility(View.GONE);
+        member = new ShareData("MEMBER");
+        select = new SelectDB();
+        insert = new InsertDB();
+        update = new UpdateDB();
     }
 
-    public void sendJob(final String qrcodein) {
-        qrcode = qrcodein;
-        workorder = qrcodein;
-        qty_total = 0;
-        qty_input = 0;
-        qty_output = 0;
-        qty_order = 0;
-        x = 0;
-        output = 0;
-        outputqty = "0";
-        qty_check_output = 0;
-        qty_output_total = 0;
-        status_next = "0";
-        operation_act = "null";
-        nextcenter = "null";
-        status = "0";
-        status_save = "0";
-        datamaster_status = 0;
+    public void sendJob() {
+
+        operation_act = null;
         status_do = false;
         btnsave = false;
-        cardContent.setVisibility(View.GONE);
-        if (qrcode.equals("")) {
-            builder.setMessage("Please, input or scan QR Code");
-            builder.setPositiveButton("OK", null);
-            builder.show();
+        sumTranIn = 0;
+        sumTranOut = 0;
+        sumTranResult = 0;
+        itemKeyIn = 0;
+        itemKeyOut = 0;
+        workcenter = null;
+        operation_act = null;
+        plant = null;
+        project = null;
+        orderqty = null;
+        starttime = null;
+        workcenterNext = null;
+        workcenter_true = null;
+        operation_actNext = null;
+        workcenter_trueNext = null;
+        switcher.showProgressView("");
+        if (workorder.equals("") || workorder == null) {
+            switcher.showErrorView("Please, input or scan QR Code");
         } else { //ELSEIF CHECK QR CODE
-            SelectDB select = new SelectDB();
-            List<HashMap<String, String>> sapResult = select.sap_data_operation(qrcode);
+            List<HashMap<String, String>> sapResult = select.sap_data_operation(workorder);
             if (sapResult != null) {
                 int index = 0;
                 for (HashMap<String, String> result : sapResult) {
@@ -223,13 +227,11 @@ public class SendFragment extends Fragment {
                     index = index + 1;
                 }// END WHILE rs_operation
                 if (status_do) {
-                    List<HashMap<String, String>> tranIn = select.tranIn(qrcode, operation_act, workcenter);
-                    List<HashMap<String, String>> tranOut = select.tranOut(qrcode, operation_act, workcenter);
-                    HashMap<String, String> resultMobileMaster = select.data_master(qrcode, operation_act, workcenter);
+                    List<HashMap<String, String>> tranIn = select.tranIn(workorder, operation_act, workcenter);
+                    List<HashMap<String, String>> tranOut = select.tranOut(workorder, operation_act, workcenter);
+                    HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
                     if (resultMobileMaster == null) {
-                        builder.setMessage("Sorry! Work Order : " + qrcode + " don\'t pass operation : " + workcenter);
-                        builder.setPositiveButton("OK", null);
-                        builder.show();
+                        switcher.showErrorView("Sorry! Work Order : " + workorder + " don\'t pass operation : " + workcenter);
                     } else {
                         for (HashMap<String, String> result : tranIn) {
                             sumTranIn = sumTranIn + Integer.parseInt(result.get("qty"));
@@ -239,54 +241,37 @@ public class SendFragment extends Fragment {
 
                         }// END WHILE rs_operation
                         sumTranResult = sumTranIn - sumTranOut;
-                        orderResult = select.data_order(qrcode);
+                        orderResult = select.data_order(workorder);
+                        plant = orderResult.get("plant");
+                        project = orderResult.get("projectno");
+                        orderqty = orderResult.get("orderqty");
+                        starttime = resultMobileMaster.get("starttime");
                         if (orderResult == null) {
-                            //txt_error.setText("Find not found work order : "+qrcode+" in database (Order Data) !!!  Pls., contact administrator (MIS)");
-                            builder.setMessage("Find not found work order : " + qrcode + " in database (Order Data) !!!\nPlease, contact administrator (MIS)");
-                            builder.setPositiveButton("OK", null);
-                            builder.show();
+                            switcher.showErrorView("Find not found work order : " + workorder + " in database (Order Data) !!!\nPlease, contact administrator (MIS)");
                         } else {
                             btnsave = true;
-                            cardContent.setVisibility(View.VISIBLE);
+                            switcher.showContentView();
                             txt_workcenter.setText(workcenter_true + " - " + operation_act);
                             txt_nextcenter.setText(workcenter_trueNext + " - " + operation_actNext);
-                            txt_workorder.setText(orderResult.get("workorder"));
-                            txt_plant.setText(orderResult.get("plant"));
-                            txt_project.setText(orderResult.get("projectno"));
-                            txt_orderqty.setText(orderResult.get("orderqty"));
+                            txt_workorder.setText(workorder);
+                            txt_plant.setText(plant);
+                            txt_project.setText(project);
+                            txt_orderqty.setText(orderqty);
                             txt_inputqty.setText(sumTranIn + "");
-                            txt_starttime.setText(resultMobileMaster.get("starttime"));
+                            txt_starttime.setText(starttime);
                             edt_outputqty.setText(sumTranResult + "");
                         }
                     }
                 } else {
-                    builder.setMessage("Find not found work order : " + qrcode + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
-                    builder.setPositiveButton("OK", null);
-                    builder.show();
+                    switcher.showErrorView("Find not found work order : " + workorder + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
                 }
 
 
             } else {
-                //txt_error.setText("Find not found work order : "+qrcode+" in database (Operation Data) !!!  Pls., contact administrator (MIS)");
-                builder.setMessage("Find not found work order : " + qrcode + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
-                builder.setPositiveButton("OK", null);
-                builder.show();
+                switcher.showErrorView("Find not found work order : " + workorder + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
             }
-          /*  HashMap<String, String> resultMobileMaster = select.data_master(qrcode, operation_act, workcenter);
-            if (resultMobileMaster != null) {
-                status_now = resultMobileMaster.get("status_now");
-                starttime = resultMobileMaster.get("starttime");
-            } else {
-                //txt_error.setText("Sorry! Work Order : "+qrcode+" don\'t pass operation : "+workcenter);
-                builder.setMessage("Sorry! Work Order : " + qrcode + " don\'t pass operation : " + workcenter);
-                builder.setPositiveButton("OK", null);
-                builder.show();
-            }*/
-
-
-            //txt_error.setText(workcenter+"  "+operation_act+"\n"+nextcenter+"  "+nextoperation_act);
-
         }
+
 
     }
 
@@ -297,8 +282,10 @@ public class SendFragment extends Fragment {
             if (btnsave == true) {
                 sumTranIn = 0;
                 sumTranOut = 0;
-                SelectDB select = new SelectDB();
-                HashMap<String, String> resultMobileMaster = select.data_master(qrcode, operation_act, workcenter);
+                sumTranResult = 0;
+                Date d = new Date();
+                final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
+                HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
                 if (resultMobileMaster.get("status_now").equals("9")) {
                     builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
                     builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
@@ -309,8 +296,8 @@ public class SendFragment extends Fragment {
                     });
                     builder.show();
                 } else {
-                    List<HashMap<String, String>> tranIn = select.tranIn(qrcode, operation_act, workcenter);
-                    List<HashMap<String, String>> tranOut = select.tranOut(qrcode, operation_act, workcenter);
+                    List<HashMap<String, String>> tranIn = select.tranIn(workorder, operation_act, workcenter);
+                    List<HashMap<String, String>> tranOut = select.tranOut(workorder, operation_act, workcenter);
                     for (HashMap<String, String> resultx : tranIn) {
                         sumTranIn = sumTranIn + Integer.parseInt(resultx.get("qty"));
                     }// END WHILE rs_operation
@@ -319,7 +306,6 @@ public class SendFragment extends Fragment {
 
                     }// END WHILE rs_operation
                     sumTranResult = sumTranIn - sumTranOut;
-                    Toast.makeText(getActivity(),sumTranOut+" out"+sumTranIn+" in"+sumTranResult+" sum",Toast.LENGTH_SHORT).show();
                     if (Integer.parseInt(edt_outputqty.getText().toString()) > sumTranResult) {
 
                         builder.setMessage("จำนวนเกิน");
@@ -342,30 +328,26 @@ public class SendFragment extends Fragment {
                         builder.show();
                         return false;
                     } else {
-                        InsertDB insert = new InsertDB();
-                        UpdateDB update = new UpdateDB();
-                        Date d = new Date();
-                        final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
                         if (workcenterNext != null) {
                             itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);
                             insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
                                     date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyIn + 1)));
-                            itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
-                            insert.data_tranout(workorder, operation_act, member.getUserRoute(),edt_outputqty.getText().toString(), date.toString(),
-                                    member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
-                            HashMap<String, String> resultMobileMasternext = select.data_master(qrcode, operation_actNext, workcenterNext);
-                            if(resultMobileMasternext == null){
-                               insert.data_master(workorder,operation_actNext,workcenterNext,orderResult.get("orderqty"),member.getUserID());
+                        /*    itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
+                            insert.data_tranout(workorder, operation_act, member.getUserRoute(), edt_outputqty.getText().toString(), date.toString(),
+                                    member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");*/
+                            HashMap<String, String> resultMobileMasternext = select.data_master(workorder, operation_actNext, workcenterNext);
+                            if (resultMobileMasternext == null) {
+                                insert.data_master(workorder, operation_actNext, workcenterNext, orderqty, member.getUserID());
                             }
-                        } else {
-                            itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
-                            insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
-                                    date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf(itemKeyIn + 1));
-                            itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
-                            insert.data_tranout(workorder, operation_act, member.getUserRoute(),edt_outputqty.getText().toString() , date.toString(),
-                                    member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
-
                         }
+                     /*   itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
+                        insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
+                                date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf(itemKeyIn + 1));*/
+                        itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
+                        insert.data_tranout(workorder, operation_act, member.getUserRoute(), edt_outputqty.getText().toString(), date.toString(),
+                                member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
+
+
                         if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + Integer.parseInt(edt_outputqty.getText().toString())))) {
                             update.dataMaster(workorder, operation_act, workcenter, "9", date.toString(), member.getUserID());
                         } else {
@@ -374,11 +356,10 @@ public class SendFragment extends Fragment {
 
 
                     }
-                    Toast.makeText(getContext(), "save ok", Toast.LENGTH_SHORT).show();
                     getActivity().finish();
                 }
             } else {
-                Toast.makeText(getContext(), "save err", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "can't save", Toast.LENGTH_SHORT).show();
             }
 
         }
@@ -414,7 +395,8 @@ public class SendFragment extends Fragment {
                 integrator.initiateScan();
             }
             if (view.getId() == R.id.btnSearch) {
-                sendJob(txtID.getText().toString());
+                workorder = txtID.getText().toString();
+                sendJob();
             }
 
         }
