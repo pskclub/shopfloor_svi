@@ -19,8 +19,6 @@ public class SelectDB {
     final String ERR = "-1";
     ConnectionDB ConnectionClass;
     String query;
-    ShareData shareMember;
-
 
     public SelectDB() {
         ConnectionClass = new ConnectionDB();
@@ -151,11 +149,12 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
+                listData = new ArrayList<>();
                 query = "SELECT * FROM SAP_ORDER_OPERATION WHERE WorkOrder = '" + qrcode + "' ORDER BY Opertion_act";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
             } else {
-                return listData;
+                return null;
             }
         } catch (SQLException e) {
             Log.e("DbSelErr", e.getMessage());
@@ -164,7 +163,7 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
-                listData = new ArrayList<>();
+
                 do {
                     HashMap<String, String> planning = new HashMap<>();
                     planning.put("workcenter", result.getString("Work_Center"));
@@ -302,6 +301,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
+                listData = new HashMap<>();
                 query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE workorder = '" + qrcode + "' ORDER BY Route_Operation ";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -315,7 +315,6 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
-                listData = new HashMap<>();
                 listData.put("workcenter", result.getString("WorkCenter"));
                 return listData;
             }
@@ -332,6 +331,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
+                listData = new HashMap<>();
                 query = "SELECT * FROM MOBILE_Shopfloor_Master WHERE workorder = '" + qrcode + "' AND Route_Operation = '" + operationAct +
                         "' AND WorkCenter = '" + workCenter + "'";
                 Statement stmt = con.createStatement();
@@ -346,7 +346,6 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
-                listData = new HashMap<>();
                 listData.put("workorder", result.getString("workorder"));
                 listData.put("route_operation", result.getString("route_operation"));
                 listData.put("qty_wo", result.getString("qty_wo"));
@@ -371,7 +370,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-
+                listData = new HashMap<>();
                 query = "SELECT * FROM SAP_ORDER_OPERATION WHERE WorkOrder = '" + qrcode + "' ORDER BY Opertion_act";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -385,7 +384,7 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
-                listData = new HashMap<>();
+
                 listData.put("workcenter", result.getString("Work_Center"));
                 listData.put("route_operation", result.getString("Opertion_act"));
                 return listData;
@@ -403,6 +402,7 @@ public class SelectDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
+                listData = new HashMap<>();
                 query = "SELECT * FROM SAP_ORDER_DATA WHERE WorkOrder = '" + qrcode + "'";
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -416,7 +416,7 @@ public class SelectDB {
         }
         try {
             if (result != null && result.next()) {
-                listData = new HashMap<>();
+
                 do {
                     listData.put("workorder", result.getString("WorkOrder"));
                     listData.put("plant", result.getString("Plant"));

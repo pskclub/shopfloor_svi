@@ -1,6 +1,7 @@
 package th.co.svi.shopfloor.fragment;
 
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -8,6 +9,7 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.text.format.DateFormat;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -25,6 +27,7 @@ import com.squareup.otto.Subscribe;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
@@ -50,11 +53,12 @@ public class CreateFragment extends Fragment {
     private String regis_date;
     private int status_insert = 0;
     private AlertDialog.Builder builder = null;
-    private String workcenter, route_operation;
+    private String workcenter, route_operation, workorder, plant, projectno, orderqty;
     private SelectDB select;
     private InsertDB insert;
     private HashMap<String, String> dataMasterResult, dataOperationResult, dataOrderResult;
     private Switcher switcher;
+    private StartJobTask loadstartjob;
 
     public CreateFragment() {
         super();
@@ -167,51 +171,16 @@ public class CreateFragment extends Fragment {
     }
 
     private void startJob() {
+        workorder = txtID.getText().toString();
         Date d = new Date();
-        switcher.showProgressView("");
         final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
         regis_date = date.toString();
-        if (txtID.getText().toString().equals("")) {
+        if (workorder.equals("")) {
             switcher.showErrorView("Please, input or scan QR Code");
         } else {
-            select = new SelectDB();
-            dataMasterResult = select.data_master(txtID.getText().toString());
-            if (dataMasterResult != null) {
-                switcher.showErrorView("Sorry! Work Order : " + txtID.getText().toString() +
-                        " Start job complete.\nPlease, input new Work Order");
-            } else {
-                dataOperationResult = select.data_operation(txtID.getText().toString());
-                if (dataOperationResult != null) {
-                    workcenter = dataOperationResult.get("workcenter");
-                    route_operation = dataOperationResult.get("route_operation");
-                    if (!member.getUserRoute().equals(workcenter)) {
-                        switcher.showErrorView("Sorry! Work Order : " + txtID.getText().toString() +
-                                " don\'t pass operation : " + member.getUserRoute());
+            loadstartjob = new StartJobTask();
+            loadstartjob.execute((Void) null);
 
-                    } else {
-                        dataOrderResult = select.data_order(txtID.getText().toString());
-                        if (dataOrderResult != null) {
-                            status_insert = 1;
-                        } else {
-                            switcher.showErrorView("Not found work order : \" + txtID.getText().toString() +\n" +
-                                    " \" in database (Order Data) !!! \n" +
-                                    "Please, contact administrator (MIS)");
-
-                        }
-                        switcher.showContentView();
-                        txt_workcenter.setText(route_operation + " - " + workcenter);
-                        txt_workorder.setText(dataOrderResult.get("workorder"));
-                        txt_plant.setText(dataOrderResult.get("plant"));
-                        txt_projectno.setText(dataOrderResult.get("projectno"));
-                        txt_orderqty.setText(dataOrderResult.get("orderqty"));
-                        txt_inputqty.setText(dataOrderResult.get("orderqty"));
-
-                    }
-                } else {
-                    switcher.showErrorView("Not found work order : " + txtID.getText().toString() +
-                            " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
-                }
-            }
         }
     }
 
@@ -223,15 +192,15 @@ public class CreateFragment extends Fragment {
                 final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
                 regis_date = date.toString();
                 insert = new InsertDB();
-                insert.data_master(txtID.getText().toString(), route_operation, workcenter,
-                        dataOrderResult.get("orderqty"), member.getUserID());
-                insert.data_tranin(txtID.getText().toString(), dataOperationResult.get("route_operation"),
-                        dataOperationResult.get("workcenter"), dataOrderResult.get("orderqty"), regis_date, member.getUserID(), "-1", "1");
+                insert.data_master(workorder, route_operation, workcenter,
+                        orderqty, member.getUserID());
+                insert.data_tranin(workorder, dataOperationResult.get("route_operation"),
+                        workcenter, orderqty, regis_date, member.getUserID(), "-1", "1");
                 Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
                 getActivity().setResult(1);
                 getActivity().finish();
             } else {
-                Toast.makeText(getActivity(), "Please, input or scan QR Code", Toast.LENGTH_SHORT).show();
+                switcher.showErrorView("Please, input or scan QR Code");
 
             }
 
@@ -279,4 +248,100 @@ public class CreateFragment extends Fragment {
             return false;
         }
     };
+
+
+    /*******
+     * class Zone
+     */
+    private class StartJobTask extends AsyncTask<Void, Void, Boolean> {
+        String err = null;
+        boolean connect = true;
+
+        @Override
+        protected void onPreExecute() {
+            err = null;
+            connect = true;
+            switcher.showProgressView("");
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            select = new SelectDB();
+            dataMasterResult = select.data_master(workorder);
+            if (dataMasterResult == null) {
+                connect = false;
+                return false;
+
+            } else {
+                if (dataMasterResult.size() > 0) {
+                    err = "Sorry! Work Order : " + workorder +
+                            " Start job complete.";
+                    return false;
+                }
+                dataOperationResult = select.data_operation(workorder);
+                if (dataOperationResult != null) {
+                    if (dataOperationResult.size() == 0) {
+                        err = "Not found in database (Operation Data) !!!\nPlease, contact administrator (MIS)";
+                        return false;
+                    }
+                    workcenter = dataOperationResult.get("workcenter");
+                    route_operation = dataOperationResult.get("route_operation");
+                    if (!member.getUserRoute().equals(workcenter)) {
+                        err = "Sorry! Work Order : " + workorder +
+                                " don\'t pass operation : " + member.getUserRoute();
+                        return false;
+
+                    } else {
+                        dataOrderResult = select.data_order(workorder);
+                        if (dataOrderResult != null) {
+                            if (dataOperationResult.size() == 0) {
+                                err = "Not found in database (Order Data) !!! \n" +
+                                        "Please, contact administrator (MIS)";
+                                return false;
+                            }
+                            status_insert = 1;
+                        } else {
+                            connect = false;
+                            return false;
+                        }
+                        plant = dataOrderResult.get("plant");
+                        projectno = dataOrderResult.get("projectno");
+                        orderqty = dataOrderResult.get("orderqty");
+                        return true;
+
+                    }
+                } else {
+                    Log.wtf("tttt","kok");
+                    connect = false;
+                    return false;
+
+                }
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                txt_workcenter.setText(route_operation + " - " + workcenter);
+                txt_workorder.setText(workorder);
+                txt_plant.setText(plant);
+                txt_projectno.setText(projectno);
+                txt_orderqty.setText(orderqty);
+                txt_inputqty.setText(orderqty);
+                switcher.showContentView();
+            } else {
+                if (!connect) {
+                    switcher.showErrorView("Can't connect to Server");
+                } else {
+                    switcher.showErrorView(err);
+                }
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            loadstartjob = null;
+            super.onCancelled();
+        }
+    }
 }

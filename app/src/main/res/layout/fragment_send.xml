@@ -6,9 +6,11 @@
     xmlns:card_view="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <include layout="@layout/view_progress" />
 
     <include layout="@layout/view_error" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -35,6 +37,7 @@
                     android:layout_marginRight="8dp"
                     android:layout_weight="5"
                     android:hint="ID"
+                    android:imeOptions="actionSearch"
                     android:inputType="number"
                     android:selectAllOnFocus="true" />
 
@@ -67,6 +70,30 @@
                     android:layout_marginLeft="16dp"
                     android:layout_marginRight="16dp"
                     android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="35dp"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:text="@string/workorder"
+                            android:textSize="15dp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/txt_workorder_send_job"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="2"
+                            android:gravity="center_vertical"
+                            android:textSize="15dp" />
+                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -116,29 +143,6 @@
                             android:textSize="15dp" />
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="35dp"
-                        android:layout_gravity="center_horizontal"
-                        android:orientation="horizontal">
-
-                        <TextView
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="1"
-                            android:gravity="center_vertical"
-                            android:text="@string/workorder"
-                            android:textSize="15dp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:id="@+id/txt_workorder_send_job"
-                            android:layout_width="0dp"
-                            android:layout_height="match_parent"
-                            android:layout_weight="2"
-                            android:gravity="center_vertical"
-                            android:textSize="15dp" />
-                    </LinearLayout>
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -301,7 +305,7 @@
                             android:gravity="center_vertical"
                             android:text="Contrainer ID"
                             android:textSize="15dp"
-                            android:textStyle="bold"/>
+                            android:textStyle="bold" />
 
                         <EditText
                             android:id="@+id/txt_contrainer"

@@ -2,6 +2,7 @@ package th.co.svi.shopfloor.fragment;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -10,10 +11,12 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -30,6 +33,7 @@ import java.util.List;
 import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.QrCodeActivity;
+import th.co.svi.shopfloor.adapter.JobPlanListAdapter;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.InsertDB;
@@ -56,6 +60,7 @@ public class SendFragment extends Fragment {
     SelectDB select;
     UpdateDB update;
     InsertDB insert;
+    private SendJobTask loadsendjob;
     private AlertDialog.Builder builder = null;
     HashMap<String, String> orderResult = null;
     private Switcher switcher;
@@ -95,6 +100,7 @@ public class SendFragment extends Fragment {
 
         fabQrcode.setOnClickListener(btnOnClickListener);
         btnSearch.setOnClickListener(btnOnClickListener);
+        txtID.setOnEditorActionListener(textViewEditerListener);
         return rootView;
     }
 
@@ -133,7 +139,6 @@ public class SendFragment extends Fragment {
             if (!(result.getContents() == null)) {
                 txtID.setText(result.getContents());
                 txtID.setSelection(txtID.getText().length());
-                workorder = txtID.getText().toString();
                 sendJob();
 
             }
@@ -174,7 +179,7 @@ public class SendFragment extends Fragment {
     }
 
     public void sendJob() {
-
+        workorder = txtID.getText().toString();
         operation_act = null;
         status_do = false;
         btnsave = false;
@@ -193,83 +198,13 @@ public class SendFragment extends Fragment {
         workcenter_true = null;
         operation_actNext = null;
         workcenter_trueNext = null;
-        switcher.showProgressView("");
+
         if (workorder.equals("") || workorder == null) {
             switcher.showErrorView("Please, input or scan QR Code");
         } else { //ELSEIF CHECK QR CODE
-            List<HashMap<String, String>> sapResult = select.sap_data_operation(workorder);
-            if (sapResult != null) {
-                int index = 0;
-                for (HashMap<String, String> result : sapResult) {
-                    workcenter = result.get("workcenter");
-                    operation_act = result.get("operation_act");
-                    workcenter_true = result.get("workcenter_true");
-                    if (member.getUserRoute().equals(workcenter)) { //CHECK USER_ROUTE AND WORK CENTER
-                        int index2 = index + 1;
-                        status_do = true;
-                        try {
-                            workcenterNext = sapResult.get(index2).get("workcenter");
-                            operation_actNext = sapResult.get(index2).get("operation_act");
-                            workcenter_trueNext = sapResult.get(index2).get("workcenter_true");
-                        } catch (RuntimeException e) {
-                            Log.e("null", e.getMessage());
-                            workcenterNext = null;
-                            operation_actNext = null;
-                            workcenter_trueNext = null;
-                        }
+            loadsendjob = new SendJobTask();
+            loadsendjob.execute((Void) null);
 
-                        break;
-                    } else {
-                        workcenter = null;
-                        operation_act = null;
-                        workcenter_true = null;
-                    }// END CHECK USER_ROUTE AND WORK CENTER
-                    index = index + 1;
-                }// END WHILE rs_operation
-                if (status_do) {
-                    List<HashMap<String, String>> tranIn = select.tranIn(workorder, operation_act, workcenter);
-                    List<HashMap<String, String>> tranOut = select.tranOut(workorder, operation_act, workcenter);
-                    HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
-                    if (resultMobileMaster == null) {
-                        switcher.showErrorView("Sorry! Work Order : " + workorder + " don\'t pass operation : " + workcenter);
-                    } else {
-                        for (HashMap<String, String> result : tranIn) {
-                            sumTranIn = sumTranIn + Integer.parseInt(result.get("qty"));
-                        }// END WHILE rs_operation
-                        for (HashMap<String, String> result : tranOut) {
-                            sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
-
-                        }// END WHILE rs_operation
-                        sumTranResult = sumTranIn - sumTranOut;
-                        orderResult = select.data_order(workorder);
-                        plant = orderResult.get("plant");
-                        project = orderResult.get("projectno");
-                        orderqty = orderResult.get("orderqty");
-                        starttime = resultMobileMaster.get("starttime");
-                        if (orderResult == null) {
-                            switcher.showErrorView("Find not found work order : " + workorder + " in database (Order Data) !!!\nPlease, contact administrator (MIS)");
-                        } else {
-                            btnsave = true;
-                            switcher.showContentView();
-                            txt_workcenter.setText(workcenter_true + " - " + operation_act);
-                            txt_nextcenter.setText(workcenter_trueNext + " - " + operation_actNext);
-                            txt_workorder.setText(workorder);
-                            txt_plant.setText(plant);
-                            txt_project.setText(project);
-                            txt_orderqty.setText(orderqty);
-                            txt_inputqty.setText(sumTranIn + "");
-                            txt_starttime.setText(starttime);
-                            edt_outputqty.setText(sumTranResult + "");
-                        }
-                    }
-                } else {
-                    switcher.showErrorView("Find not found work order : " + workorder + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
-                }
-
-
-            } else {
-                switcher.showErrorView("Find not found work order : " + workorder + " in database (Operation Data) !!!\nPlease, contact administrator (MIS)");
-            }
         }
 
 
@@ -288,12 +223,7 @@ public class SendFragment extends Fragment {
                 HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
                 if (resultMobileMaster.get("status_now").equals("9")) {
                     builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
-                    builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            getActivity().finish();
-                        }
-                    });
+                    builder.setPositiveButton("OK", null);
                     builder.show();
                 } else {
                     List<HashMap<String, String>> tranIn = select.tranIn(workorder, operation_act, workcenter);
@@ -309,22 +239,12 @@ public class SendFragment extends Fragment {
                     if (Integer.parseInt(edt_outputqty.getText().toString()) > sumTranResult) {
 
                         builder.setMessage("จำนวนเกิน");
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                getActivity().finish();
-                            }
-                        });
+                        builder.setPositiveButton("OK", null);
                         builder.show();
                         return false;
                     } else if (sumTranResult == 0) {
                         builder.setMessage("ส่งครบแล้ว");
-                        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                getActivity().finish();
-                            }
-                        });
+                        builder.setPositiveButton("OK", null);
                         builder.show();
                         return false;
                     } else {
@@ -359,7 +279,9 @@ public class SendFragment extends Fragment {
                     getActivity().finish();
                 }
             } else {
-                Toast.makeText(getContext(), "can't save", Toast.LENGTH_SHORT).show();
+                builder.setMessage("can't save");
+                builder.setPositiveButton("OK", null);
+                builder.show();
             }
 
         }
@@ -395,10 +317,155 @@ public class SendFragment extends Fragment {
                 integrator.initiateScan();
             }
             if (view.getId() == R.id.btnSearch) {
-                workorder = txtID.getText().toString();
                 sendJob();
             }
 
         }
     };
+
+    TextView.OnEditorActionListener textViewEditerListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+            if (id == EditorInfo.IME_ACTION_SEARCH ||
+                    id == EditorInfo.IME_ACTION_DONE ||
+                    keyEvent.getAction() == KeyEvent.ACTION_DOWN &&
+                            keyEvent.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                sendJob();
+                return true;
+            }
+            return false;
+        }
+    };
+
+    /*******
+     * class Zone
+     */
+    private class SendJobTask extends AsyncTask<Void, Void, Boolean> {
+        String err = null;
+        boolean connect = true;
+
+        @Override
+        protected void onPreExecute() {
+            err = null;
+            connect = true;
+            switcher.showProgressView("");
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            List<HashMap<String, String>> sapResult = select.sap_data_operation(workorder);
+            if (sapResult != null) {
+                if (sapResult.size() == 0) {
+                    err = "Not found in database (Operation Data) !!!\nPlease, contact administrator (MIS)000";
+                    return false;
+                }
+                int index = 0;
+                for (HashMap<String, String> result : sapResult) {
+                    workcenter = result.get("workcenter");
+                    operation_act = result.get("operation_act");
+                    workcenter_true = result.get("workcenter_true");
+                    if (member.getUserRoute().equals(workcenter)) { //CHECK USER_ROUTE AND WORK CENTER
+                        int index2 = index + 1;
+                        status_do = true;
+                        try {
+                            workcenterNext = sapResult.get(index2).get("workcenter");
+                            operation_actNext = sapResult.get(index2).get("operation_act");
+                            workcenter_trueNext = sapResult.get(index2).get("workcenter_true");
+                        } catch (RuntimeException e) {
+                            Log.e("null", e.getMessage());
+                            workcenterNext = null;
+                            operation_actNext = null;
+                            workcenter_trueNext = null;
+                        }
+
+                        break;
+                    } else {
+                        workcenter = null;
+                        operation_act = null;
+                        workcenter_true = null;
+                    }// END CHECK USER_ROUTE AND WORK CENTER
+                    index = index + 1;
+                }// END WHILE rs_operation
+                if (status_do) {
+                    List<HashMap<String, String>> tranIn = select.tranIn(workorder, operation_act, workcenter);
+                    List<HashMap<String, String>> tranOut = select.tranOut(workorder, operation_act, workcenter);
+                    HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
+                    if (resultMobileMaster == null) {
+                        connect = false;
+                        return false;
+                    } else {
+                        if (resultMobileMaster.size() == 0) {
+                            err = "Sorry! Work Order : " + workorder + " don\'t pass operation : " + workcenter;
+                            return false;
+                        }
+                        for (HashMap<String, String> result : tranIn) {
+                            sumTranIn = sumTranIn + Integer.parseInt(result.get("qty"));
+                        }// END WHILE rs_operation
+                        for (HashMap<String, String> result : tranOut) {
+                            sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
+
+                        }// END WHILE rs_operation
+                        sumTranResult = sumTranIn - sumTranOut;
+                        orderResult = select.data_order(workorder);
+                        plant = orderResult.get("plant");
+                        project = orderResult.get("projectno");
+                        orderqty = orderResult.get("orderqty");
+                        starttime = resultMobileMaster.get("starttime");
+                        if (orderResult == null) {
+                            connect = false;
+                            return false;
+
+                        } else {
+                            if (orderResult.size() == 0) {
+                                err = "Not found in database (Order Data) !!!\nPlease, contact administrator (MIS)";
+                                return false;
+                            }
+                            btnsave = true;
+                            return true;
+
+                        }
+                    }
+                } else {
+                    err = "Not found in database (Operation Data) !!!\nPlease, contact administrator (MIS)";
+                    return false;
+                }
+
+
+            } else {
+                connect = false;
+                return false;
+            }
+
+
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            if (success) {
+                switcher.showContentView();
+                txt_workcenter.setText(workcenter_true + " - " + operation_act);
+                txt_nextcenter.setText(workcenter_trueNext + " - " + operation_actNext);
+                txt_workorder.setText(workorder);
+                txt_plant.setText(plant);
+                txt_project.setText(project);
+                txt_orderqty.setText(orderqty);
+                txt_inputqty.setText(sumTranIn + "");
+                txt_starttime.setText(starttime);
+                edt_outputqty.setText(sumTranResult + "");
+            } else {
+                if (!connect) {
+                    switcher.showErrorView("Can't connect to Server");
+                } else {
+                    switcher.showErrorView(err);
+                }
+            }
+        }
+
+        @Override
+        protected void onCancelled() {
+            loadsendjob = null;
+            super.onCancelled();
+        }
+    }
+
 }

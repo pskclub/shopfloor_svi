@@ -6,9 +6,11 @@
     xmlns:card_view="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <include layout="@layout/view_progress" />
 
     <include layout="@layout/view_error" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -35,6 +37,7 @@
                     android:layout_marginRight="8dp"
                     android:layout_weight="5"
                     android:hint="ID"
+                    android:imeOptions="actionSearch"
                     android:inputType="number"
                     android:selectAllOnFocus="true" />
 
@@ -78,15 +81,16 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1.2"
                             android:gravity="center_vertical"
-                            android:text="@string/workcenter"
+                            android:text="@string/workorder"
                             android:textSize="15dp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/txt_workcenter_start"
+                            android:id="@+id/txt_workorder_start"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="2"
+
                             android:gravity="center_vertical"
                             android:text=""
                             android:textSize="15dp" />
@@ -103,20 +107,20 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1.2"
                             android:gravity="center_vertical"
-                            android:text="@string/workorder"
+                            android:text="@string/workcenter"
                             android:textSize="15dp"
                             android:textStyle="bold" />
 
                         <TextView
-                            android:id="@+id/txt_workorder_start"
+                            android:id="@+id/txt_workcenter_start"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="2"
-
                             android:gravity="center_vertical"
                             android:text=""
                             android:textSize="15dp" />
                     </LinearLayout>
+
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -228,9 +232,9 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="40dp"
-                        android:visibility="gone"
                         android:layout_gravity="center_horizontal"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:visibility="gone">
 
                         <TextView
                             android:layout_width="0dp"
