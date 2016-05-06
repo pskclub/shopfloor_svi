@@ -112,8 +112,21 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT * FROM MOBILE_Shopfloor_Master  WHERE Status = '0'  AND WorkCenter and '" + USER_ROUTE +
-                        "%' ORDER BY workorder";
+                query = "select data_in.* , isnull(data_out.qty_out,0) as qty_out  " +
+                        ", isnull(data_in.qty_in,0)  - isnull(data_out.qty_out,0) as qty_bal from  ( " +
+                        " SELECT [workorder]  ,[route_operation] ,[workcenter] " +
+                        "      ,sum([qty]) as qty_in " +
+                        "  FROM [SAPWI_DEV_Study].[dbo].[MOBILE_SHOPFLOOR_TRANIN] " +
+                        "  where workcenter ='" + USER_ROUTE + "' " +
+                        "  group by  [workorder] ,[route_operation]  ,[workcenter] ) as data_in " +
+                        "  left outer join  " +
+                        "  (SELECT [workorder] ,[route_operation]  ,[workcenter] " +
+                        "      ,sum([qty]) as qty_out " +
+                        "  FROM [SAPWI_DEV_Study].[dbo].[MOBILE_SHOPFLOOR_TRANOUT] " +
+                        "  where workcenter = '" + USER_ROUTE + "' " +
+                        "  group by [workorder] ,[route_operation] ,[workcenter] ) as data_out " +
+                        "  on data_in.[workorder] = data_out.[workorder] and  data_in.[workcenter] = data_out.[workcenter] " +
+                        "  where (isnull(data_in.qty_in,0) - isnull(data_out.qty_out,0)) > 0";
 
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -131,7 +144,7 @@ public class SelectDB {
                     HashMap<String, String> planning = new HashMap<>();
                     planning.put("QR_CODE", result.getString("workorder"));
                     planning.put("WorkCenter", result.getString("WorkCenter"));
-                    planning.put("Qty_WO", result.getString("Qty_WO"));
+                    planning.put("Qty_WO", result.getString("Qty_bal"));
                     listData.add(planning);
                 } while (result.next());
                 return listData;
