@@ -1,9 +1,12 @@
 package th.co.svi.shopfloor.fragment;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -42,9 +45,7 @@ import th.co.svi.shopfloor.manager.ShareData;
 import th.co.svi.shopfloor.manager.UpdateDB;
 
 
-/**
- * Created by nuuneoi on 11/16/2014.
- */
+
 public class SendFragment extends Fragment {
     TextView txt_workcenter, txt_nextcenter, txt_workorder, txt_plant, txt_project, txt_orderqty,
             txt_inputqty, txt_starttime, txt_contrainer;
@@ -54,8 +55,8 @@ public class SendFragment extends Fragment {
     EditText txtID, edt_outputqty;
     boolean status_do = false, btnsave = false;
     String workcenter = null, operation_act = null, workorder = null, plant = null, project = null, orderqty = null,
-            starttime = null, workcenterNext = null, workcenter_true = null, operation_actNext = null, workcenter_trueNext = null;
-    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, itemKeyIn = 0, itemKeyOut = 0;
+            starttime = null, workcenterNext = null, workcenter_true = null, operation_actNext = null, workcenter_trueNext = null, contrainer = null;
+    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, itemKeyIn = 0, itemKeyOut = 0, outputqty = 0;
     ShareData member;
     SelectDB select;
     UpdateDB update;
@@ -64,6 +65,7 @@ public class SendFragment extends Fragment {
     private AlertDialog.Builder builder = null;
     HashMap<String, String> orderResult = null;
     private Switcher switcher;
+    private ProgressDialog progress;
 
     public SendFragment() {
         super();
@@ -214,7 +216,9 @@ public class SendFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            if (btnsave == true) {
+            if (btnsave) {
+                contrainer = txt_contrainer.getText().toString();
+                outputqty = Integer.parseInt(edt_outputqty.getText().toString());
                 sumTranIn = 0;
                 sumTranOut = 0;
                 sumTranResult = 0;
@@ -236,7 +240,7 @@ public class SendFragment extends Fragment {
 
                     }// END WHILE rs_operation
                     sumTranResult = sumTranIn - sumTranOut;
-                    if (Integer.parseInt(edt_outputqty.getText().toString()) > sumTranResult) {
+                    if (outputqty > sumTranResult) {
 
                         builder.setMessage("จำนวนเกิน");
                         builder.setPositiveButton("OK", null);
@@ -250,13 +254,13 @@ public class SendFragment extends Fragment {
                     } else {
                         if (workcenterNext != null) {
                             itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);
-                            insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
-                                    date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyIn + 1)));
+                            insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty),
+                                    date.toString(), member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
                         /*    itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
                             insert.data_tranout(workorder, operation_act, member.getUserRoute(), edt_outputqty.getText().toString(), date.toString(),
                                     member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");*/
                             HashMap<String, String> resultMobileMasternext = select.data_master(workorder, operation_actNext, workcenterNext);
-                            if (resultMobileMasternext == null) {
+                            if (resultMobileMasternext.size() == 0) {
                                 insert.data_master(workorder, operation_actNext, workcenterNext, orderqty, member.getUserID());
                             }
                         }
@@ -264,11 +268,11 @@ public class SendFragment extends Fragment {
                         insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
                                 date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf(itemKeyIn + 1));*/
                         itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
-                        insert.data_tranout(workorder, operation_act, member.getUserRoute(), edt_outputqty.getText().toString(), date.toString(),
-                                member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");
+                        insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty), date.toString(),
+                                member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0");
 
 
-                        if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + Integer.parseInt(edt_outputqty.getText().toString())))) {
+                        if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + outputqty))) {
                             update.dataMaster(workorder, operation_act, workcenter, "9", date.toString(), member.getUserID());
                         } else {
                             update.dataMaster(workorder, operation_act, workcenter, "0", null, member.getUserID());
@@ -276,8 +280,11 @@ public class SendFragment extends Fragment {
 
 
                     }
+                    Toast.makeText(getContext(), "Send Success!!", Toast.LENGTH_SHORT).show();
+                    getActivity().setResult(1);
                     getActivity().finish();
                 }
+
             } else {
                 builder.setMessage("can't save");
                 builder.setPositiveButton("OK", null);
@@ -467,5 +474,6 @@ public class SendFragment extends Fragment {
             super.onCancelled();
         }
     }
+
 
 }

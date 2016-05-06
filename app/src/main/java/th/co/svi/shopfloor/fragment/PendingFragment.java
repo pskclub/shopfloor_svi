@@ -139,6 +139,9 @@ public class PendingFragment extends Fragment {
         if (requestCode == 1 && resultCode == 1) {
             loadPlan();
         }
+        if (requestCode == 2 && resultCode == 1) {
+            loadPlan();
+        }
 
     }
 

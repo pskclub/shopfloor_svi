@@ -311,7 +311,6 @@ public class CreateFragment extends Fragment {
 
                     }
                 } else {
-                    Log.wtf("tttt","kok");
                     connect = false;
                     return false;
 
