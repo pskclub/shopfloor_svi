@@ -112,7 +112,7 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new ArrayList<>();
-                query = "SELECT * FROM MOBILE_Shopfloor_Master  WHERE Status = '0'  AND WorkCenter LIKE '" + USER_ROUTE +
+                query = "SELECT * FROM MOBILE_Shopfloor_Master  WHERE Status = '0'  AND WorkCenter and '" + USER_ROUTE +
                         "%' ORDER BY workorder";
 
                 Statement stmt = con.createStatement();
