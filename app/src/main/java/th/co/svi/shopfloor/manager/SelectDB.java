@@ -126,7 +126,7 @@ public class SelectDB {
                         "  where workcenter = '" + USER_ROUTE + "' " +
                         "  group by [workorder] ,[route_operation] ,[workcenter] ) as data_out " +
                         "  on data_in.[workorder] = data_out.[workorder] and  data_in.[workcenter] = data_out.[workcenter] " +
-                        "  where (isnull(data_in.qty_in,0) - isnull(data_out.qty_out,0)) > 0";
+                        "  where (isnull(data_in.qty_in,0) - isnull(data_out.qty_out,0)) > 0 order by data_in.[workorder] desc  " ;
 
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
