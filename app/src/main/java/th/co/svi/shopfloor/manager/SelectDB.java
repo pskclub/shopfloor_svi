@@ -126,7 +126,7 @@ public class SelectDB {
                         "  where workcenter = '" + USER_ROUTE + "' " +
                         "  group by [workorder] ,[route_operation] ,[workcenter] ) as data_out " +
                         "  on data_in.[workorder] = data_out.[workorder] and  data_in.[workcenter] = data_out.[workcenter] " +
-                        "  where (isnull(data_in.qty_in,0) - isnull(data_out.qty_out,0)) > 0 order by data_in.[workorder] desc  " ;
+                        "  where (isnull(data_in.qty_in,0) - isnull(data_out.qty_out,0)) > 0 order by data_in.[workorder] desc  ";
 
                 Statement stmt = con.createStatement();
                 result = stmt.executeQuery(query);
@@ -153,6 +153,70 @@ public class SelectDB {
             Log.e("DbSelErrPendding", e.getMessage());
         }
 
+        return listData;
+    }
+
+    public HashMap<String, String> show_contrainer(String contrainer_id) {
+        ResultSet result = null;
+        HashMap<String, String> listData = null;
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = new HashMap<>();
+                query = "select * from ( " +
+                        "select TOP 2 * from ( " +
+                        "SELECT workorder,route_operation,item_key,contrainer_id,workcenter,qty,trans_date ,'IN' as type_case" +
+                        "  FROM [SAPWI_DEV_Study].[dbo].[MOBILE_SHOPFLOOR_TRANIN]" +
+                        "  where contrainer_id = '" + contrainer_id + "' " +
+                        " union all" +
+                        "SELECT workorder,route_operation,item_key,contrainer_id,workcenter,qty,trans_date,'OUT' as type_case" +
+                        "  FROM [SAPWI_DEV_Study].[dbo].[MOBILE_SHOPFLOOR_TRANOUT]" +
+                        "where contrainer_id = '" + contrainer_id + "' " +
+                        ") as chk_contrainer" +
+                        "order by trans_date desc ,type_case ) as data_OK" +
+                        "left outer join " +
+                        "(SELECT [WorkOrder] as sap_wo  ,[OrderType]  ,[Plant] ,left([Material] ,3) as cust_code" +
+                        "      ,[Material]  ,[Description] ,Ord_QTY_True as qty_order" +
+                        "      ,[Order_startdate] as rel_date ,[Order_finishdate]  as commit_date" +
+                        "  FROM [SAPWI_DEV_Study].[dbo].[SAP_ORDER_DATA] )  as data_sap" +
+                        " on data_OK.WorkOrder = data_sap.sap_wo  ";
+
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErrPendding", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                do {
+                    if (result.getString("type_case").equals("OUT")) {
+                        listData.put("workorder", result.getString("workorder"));
+                        listData.put("workcenter_out", result.getString("WorkCenter"));
+                        listData.put("qty_order", result.getString("qty_order"));
+                        listData.put("qty_job", result.getString("Qty"));
+                        listData.put("trans_date", result.getString("trans_date"));
+                        listData.put("OrderType", result.getString("OrderType"));
+                        listData.put("Plant", result.getString("Plant"));
+                        listData.put("cust_code", result.getString("cust_code"));
+                        listData.put("Material", result.getString("Material"));
+                        listData.put("Description", result.getString("Description"));
+                        listData.put("rel_date", result.getString("rel_date"));
+                        listData.put("commit_date", result.getString("commit_date"));
+                    } else if (result.getString("type_case").equals("IN")) {
+                        listData.put("workcenter_in", result.getString("WorkCenter"));
+                    }
+
+                } while (result.next());
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErrPendding", e.getMessage());
+        }
         return listData;
     }
 
