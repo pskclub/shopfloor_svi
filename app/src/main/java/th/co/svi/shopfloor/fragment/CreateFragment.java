@@ -1,15 +1,16 @@
 package th.co.svi.shopfloor.fragment;
 
+import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.text.format.DateFormat;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -21,8 +22,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.ResultPoint;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.journeyapps.barcodescanner.BarcodeCallback;
+import com.journeyapps.barcodescanner.BarcodeResult;
+import com.journeyapps.barcodescanner.CompoundBarcodeView;
 import com.squareup.otto.Subscribe;
 
 import java.util.Date;
@@ -31,7 +36,6 @@ import java.util.List;
 
 import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
-import th.co.svi.shopfloor.activity.QrCodeActivity;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.InsertDB;
@@ -44,8 +48,7 @@ import th.co.svi.shopfloor.manager.ShareData;
  */
 public class CreateFragment extends Fragment {
     private EditText txtID;
-    private ImageButton btnSearch;
-    private FloatingActionButton fabQrcode;
+    private ImageButton btnSearch, btnQrcode;
     private CardView cardContent;
     private ShareData member;
     private TextView txt_workcenter, txt_workorder, txt_plant,
@@ -59,6 +62,7 @@ public class CreateFragment extends Fragment {
     private HashMap<String, String> dataMasterResult, dataOperationResult, dataOrderResult;
     private Switcher switcher;
     private StartJobTask loadstartjob;
+    private CompoundBarcodeView barcodeView;
 
     public CreateFragment() {
         super();
@@ -88,9 +92,10 @@ public class CreateFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_create, container, false);
         initInstances(rootView, savedInstanceState);
 
-        fabQrcode.setOnClickListener(fabOnClickListener);
+        btnQrcode.setOnClickListener(fabOnClickListener);
         btnSearch.setOnClickListener(btnSearchOnClickListener);
         txtID.setOnEditorActionListener(textOnEditorActionListener);
+        barcodeView.decodeContinuous(callback);
         return rootView;
     }
 
@@ -106,8 +111,7 @@ public class CreateFragment extends Fragment {
         //       in onSavedInstanceState
         txtID = (EditText) rootView.findViewById(R.id.txtID);
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
-        fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
-        fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
+        btnQrcode = (ImageButton) rootView.findViewById(R.id.btnQrcode);
         cardContent = (CardView) rootView.findViewById(R.id.cardContent);
         txt_workcenter = (TextView) rootView.findViewById(R.id.txt_workcenter_start);
         txt_workorder = (TextView) rootView.findViewById(R.id.txt_workorder_start);
@@ -115,6 +119,7 @@ public class CreateFragment extends Fragment {
         txt_projectno = (TextView) rootView.findViewById(R.id.txt_projectno_start);
         txt_orderqty = (TextView) rootView.findViewById(R.id.txt_orderqty_start);
         txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_start);
+        barcodeView = (CompoundBarcodeView) rootView.findViewById(R.id.barcode_scanner);
         switcher = new Switcher.Builder(getContext())
                 .addContentView(rootView.findViewById(R.id.cardContent)) //content member
                 .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
@@ -142,10 +147,25 @@ public class CreateFragment extends Fragment {
         ResultBus.getInstance().register(mActivityResultSubscriber);
     }
 
+
     @Override
     public void onStop() {
         super.onStop();
         ResultBus.getInstance().unregister(mActivityResultSubscriber);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        barcodeView.resume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        barcodeView.pause();
     }
 
     private Object mActivityResultSubscriber = new Object() {
@@ -171,6 +191,8 @@ public class CreateFragment extends Fragment {
     }
 
     private void startJob() {
+        barcodeView.pause();
+        barcodeView.setVisibility(View.GONE);
         workorder = txtID.getText().toString();
         Date d = new Date();
         final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
@@ -196,7 +218,7 @@ public class CreateFragment extends Fragment {
                         orderqty, member.getUserID());
                 insert.data_tranin(workorder, dataOperationResult.get("route_operation"),
                         workcenter, orderqty, regis_date, member.getUserID(), "-1", "1");
-                Toast.makeText(getActivity(), "Start job complete", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Start complete", Toast.LENGTH_SHORT).show();
                 getActivity().setResult(1);
                 getActivity().finish();
             } else {
@@ -218,13 +240,8 @@ public class CreateFragment extends Fragment {
     View.OnClickListener fabOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            IntentIntegrator integrator = new IntentIntegrator(getActivity());
-            integrator.setCaptureActivity(QrCodeActivity.class);
-            integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
-            integrator.setPrompt("Scan QR Code");
-            integrator.setOrientationLocked(true);
-            integrator.setBeepEnabled(true);
-            integrator.initiateScan();
+            barcodeView.resume();
+            barcodeView.setVisibility(View.VISIBLE);
         }
     };
 
@@ -248,7 +265,24 @@ public class CreateFragment extends Fragment {
             return false;
         }
     };
+    private BarcodeCallback callback = new BarcodeCallback() {
+        @Override
+        public void barcodeResult(BarcodeResult result) {
+            if (result.getText() != null) {
+                MediaPlayer.create(getActivity(), R.raw.zxing_beep).start();
+                Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(300);
+                txtID.setText(result.getText());
+                txtID.setSelection(txtID.getText().length());
+                startJob();
 
+            }
+        }
+
+        @Override
+        public void possibleResultPoints(List<ResultPoint> resultPoints) {
+        }
+    };
 
     /*******
      * class Zone

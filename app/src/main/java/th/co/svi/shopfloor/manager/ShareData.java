@@ -28,14 +28,14 @@ public class ShareData {
     }
 
     public String getUsername() {
-        return member.getString("username", null);
+        return member.getString("username", "");
     }
 
     public String getUserID() {
-        return member.getString("user_id", null);
+        return member.getString("user_id", "");
     }
 
     public String getUserRoute() {
-        return member.getString("user_route", null);
+        return member.getString("user_route", "");
     }
 }

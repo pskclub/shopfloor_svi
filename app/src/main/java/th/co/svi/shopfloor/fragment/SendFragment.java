@@ -1,14 +1,13 @@
 package th.co.svi.shopfloor.fragment;
 
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.os.Vibrator;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
@@ -25,8 +24,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.ResultPoint;
 import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
+import com.journeyapps.barcodescanner.BarcodeCallback;
+import com.journeyapps.barcodescanner.BarcodeResult;
+import com.journeyapps.barcodescanner.CompoundBarcodeView;
 import com.squareup.otto.Subscribe;
 
 import java.util.Date;
@@ -35,8 +38,6 @@ import java.util.List;
 
 import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
-import th.co.svi.shopfloor.activity.QrCodeActivity;
-import th.co.svi.shopfloor.adapter.JobPlanListAdapter;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.InsertDB;
@@ -45,12 +46,10 @@ import th.co.svi.shopfloor.manager.ShareData;
 import th.co.svi.shopfloor.manager.UpdateDB;
 
 
-
 public class SendFragment extends Fragment {
     TextView txt_workcenter, txt_nextcenter, txt_workorder, txt_plant, txt_project, txt_orderqty,
             txt_inputqty, txt_starttime, txt_contrainer;
-    FloatingActionButton fabQrcode;
-    ImageButton btnSearch;
+    ImageButton btnSearch, btnQrcode;
     CardView cardContent;
     EditText txtID, edt_outputqty;
     boolean status_do = false, btnsave = false;
@@ -66,6 +65,7 @@ public class SendFragment extends Fragment {
     HashMap<String, String> orderResult = null;
     private Switcher switcher;
     private ProgressDialog progress;
+    private CompoundBarcodeView barcodeView;
 
     public SendFragment() {
         super();
@@ -100,9 +100,10 @@ public class SendFragment extends Fragment {
             sendJob();
         }
 
-        fabQrcode.setOnClickListener(btnOnClickListener);
+        btnQrcode.setOnClickListener(btnOnClickListener);
         btnSearch.setOnClickListener(btnOnClickListener);
         txtID.setOnEditorActionListener(textViewEditerListener);
+        barcodeView.decodeContinuous(callback);
         return rootView;
     }
 
@@ -121,6 +122,20 @@ public class SendFragment extends Fragment {
     public void onStop() {
         super.onStop();
         ResultBus.getInstance().unregister(mActivityResultSubscriber);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        barcodeView.resume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        barcodeView.pause();
     }
 
     private Object mActivityResultSubscriber = new Object() {
@@ -164,8 +179,9 @@ public class SendFragment extends Fragment {
         txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_send_job);
         txt_starttime = (TextView) rootView.findViewById(R.id.txt_starttime_send_job);
         txt_contrainer = (TextView) rootView.findViewById(R.id.txt_contrainer);
-        fabQrcode = (FloatingActionButton) rootView.findViewById(R.id.fabQrcode);
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
+        btnQrcode = (ImageButton) rootView.findViewById(R.id.btnQrcode);
+        barcodeView = (CompoundBarcodeView) rootView.findViewById(R.id.barcode_scanner);
         switcher = new Switcher.Builder(getContext())
                 .addContentView(rootView.findViewById(R.id.cardContent)) //content member
                 .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
@@ -181,6 +197,8 @@ public class SendFragment extends Fragment {
     }
 
     public void sendJob() {
+        barcodeView.pause();
+        barcodeView.setVisibility(View.GONE);
         workorder = txtID.getText().toString();
         operation_act = null;
         status_do = false;
@@ -256,17 +274,11 @@ public class SendFragment extends Fragment {
                             itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);
                             insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty),
                                     date.toString(), member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
-                        /*    itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
-                            insert.data_tranout(workorder, operation_act, member.getUserRoute(), edt_outputqty.getText().toString(), date.toString(),
-                                    member.getUserID(), txt_contrainer.getText().toString(), String.valueOf((itemKeyOut + 1)), "0");*/
                             HashMap<String, String> resultMobileMasternext = select.data_master(workorder, operation_actNext, workcenterNext);
                             if (resultMobileMasternext.size() == 0) {
                                 insert.data_master(workorder, operation_actNext, workcenterNext, orderqty, member.getUserID());
                             }
                         }
-                     /*   itemKeyIn = select.countItemKeyIn(workorder, operation_act, member.getUserRoute());
-                        insert.data_tranin(workorder, operation_actNext, workcenterNext, edt_outputqty.getText().toString(),
-                                date.toString(), member.getUserID(), txt_contrainer.getText().toString(), String.valueOf(itemKeyIn + 1));*/
                         itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
                         insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty), date.toString(),
                                 member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0");
@@ -277,8 +289,6 @@ public class SendFragment extends Fragment {
                         } else {
                             update.dataMaster(workorder, operation_act, workcenter, "0", null, member.getUserID());
                         }
-
-
                     }
                     Toast.makeText(getContext(), "Send Success!!", Toast.LENGTH_SHORT).show();
                     getActivity().setResult(1);
@@ -286,7 +296,7 @@ public class SendFragment extends Fragment {
                 }
 
             } else {
-                builder.setMessage("can't save");
+                builder.setMessage("can't Start");
                 builder.setPositiveButton("OK", null);
                 builder.show();
             }
@@ -314,14 +324,9 @@ public class SendFragment extends Fragment {
     View.OnClickListener btnOnClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            if (view.getId() == R.id.fabQrcode) {
-                IntentIntegrator integrator = new IntentIntegrator(getActivity());
-                integrator.setCaptureActivity(QrCodeActivity.class);
-                integrator.setDesiredBarcodeFormats(IntentIntegrator.QR_CODE_TYPES);
-                integrator.setPrompt("Scan QR Code");
-                integrator.setOrientationLocked(true);
-                integrator.setBeepEnabled(true);
-                integrator.initiateScan();
+            if (view.getId() == R.id.btnQrcode) {
+                barcodeView.resume();
+                barcodeView.setVisibility(View.VISIBLE);
             }
             if (view.getId() == R.id.btnSearch) {
                 sendJob();
@@ -341,6 +346,24 @@ public class SendFragment extends Fragment {
                 return true;
             }
             return false;
+        }
+    };
+    private BarcodeCallback callback = new BarcodeCallback() {
+        @Override
+        public void barcodeResult(BarcodeResult result) {
+            if (result.getText() != null) {
+                MediaPlayer.create(getActivity(), R.raw.zxing_beep).start();
+                Vibrator v = (Vibrator) getActivity().getSystemService(Context.VIBRATOR_SERVICE);
+                v.vibrate(300);
+                txtID.setText(result.getText());
+                txtID.setSelection(txtID.getText().length());
+                sendJob();
+
+            }
+        }
+
+        @Override
+        public void possibleResultPoints(List<ResultPoint> resultPoints) {
         }
     };
 

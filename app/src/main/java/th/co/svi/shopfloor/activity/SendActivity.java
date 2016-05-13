@@ -43,14 +43,14 @@ public class SendActivity extends AppCompatActivity {
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Send");
+        toolbar.setTitle("Send Order");
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        menu.add(1, 1, 1, "SAVE").setShowAsAction(2);
+        menu.add(1, 1, 1, "SEND").setShowAsAction(2);
         return true;
     }
 

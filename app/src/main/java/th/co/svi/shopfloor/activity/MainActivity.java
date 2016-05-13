@@ -3,14 +3,12 @@ package th.co.svi.shopfloor.activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,23 +21,16 @@ import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.adapter.ViewPagerAdapter;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
-import th.co.svi.shopfloor.fragment.MainFragment;
 import th.co.svi.shopfloor.fragment.PendingFragment;
+import th.co.svi.shopfloor.fragment.PlanFragment;
 import th.co.svi.shopfloor.manager.ShareData;
 
 public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private TabLayout tabLayout;
     private ViewPager viewPager;
-    private CoordinatorLayout coordinatorLayout;
-    boolean plan = false;
-    public static String txtDate = (DateFormat.format("yyyy-MM-dd", new java.util.Date()).toString());
     ViewPagerAdapter pageAdapter;
     ShareData shareMember;
-    int[] tabIcons = {
-            R.drawable.ic_list_white_36dp,
-            R.drawable.ic_schedule_white_36dp
-    };
 
     private Boolean isFabOpen = false;
     private FloatingActionButton fabMenu, fabSend, fabCreate;
@@ -50,7 +41,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initInstances();
-        viewPager.addOnPageChangeListener(onPageChangeListener);
         if (shareMember.getUserRoute().equals("CMC1") ||
                 shareMember.getUserRoute().equals("CMS1") ||
                 shareMember.getUserRoute().equals("SMT1")) {
@@ -80,14 +70,9 @@ public class MainActivity extends AppCompatActivity {
     private void displayViewPendingAndPlan() {
         pageAdapter = new ViewPagerAdapter(getSupportFragmentManager());
         pageAdapter.addFragment(new PendingFragment(), "Pending");
-        pageAdapter.addFragment(new MainFragment(), "Planning");
-
+        pageAdapter.addFragment(new PlanFragment(), "Planning");
         viewPager.setAdapter(pageAdapter);
-
         tabLayout.setupWithViewPager(viewPager);
-        tabLayout.getTabAt(0).setIcon(tabIcons[1]);
-        tabLayout.getTabAt(1).setIcon(tabIcons[0]);
-
         fabMenu.setOnClickListener(onFabClickListener);
         fabSend.setOnClickListener(onFabClickListener);
         fabCreate.setOnClickListener(onFabClickListener);
@@ -97,11 +82,10 @@ public class MainActivity extends AppCompatActivity {
     private void initInstances() {
         shareMember = new ShareData("MEMBER");
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle("Pending");
+        toolbar.setTitle("ShopFloor");
         setSupportActionBar(toolbar);
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         tabLayout = (TabLayout) findViewById(R.id.tabs);
-        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinatorLayout);
         fabMenu = (FloatingActionButton) findViewById(R.id.fabMenu);
         fabSend = (FloatingActionButton) findViewById(R.id.fabSend);
         fabCreate = (FloatingActionButton) findViewById(R.id.fabCreate);
@@ -134,24 +118,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        menu.clear();
-        if (plan) {
-//            menu.add(1, 3, 2, "Find Date").setIcon(R.drawable.ic_date_range_white_24dp).setShowAsAction(2);?
-            menu.add(1, 3, 3, txtDate).setShowAsAction(1);
-
-        }
-        menu.add(1, 1, 1, "User : " + shareMember.getUsername().toUpperCase() +
-                " (" + shareMember.getUserRoute() + ")");
-        menu.add(1, 2, 2, "Sign Out");
+    public boolean onCreateOptionsMenu(Menu menu) {
+        menu.add(1, 1, 4, shareMember.getUsername().toUpperCase() +
+                " | " + shareMember.getUserRoute()).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        menu.add(1, 2, 5, "Sign Out").setIcon(R.drawable.ic_power_settings_new_white_24dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
 
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == 1) {
-            Toast.makeText(this, "Username : " + shareMember.getUsername() + " | Route : " + shareMember.getUserRoute(), Toast.LENGTH_SHORT).show();
+        if (item.getItemId() == 1 || item.getItemId() == 9) {
+            Toast.makeText(this, "ID : " + shareMember.getUserID() + " | Name : " + shareMember.getUsername() + " | Route : " + shareMember.getUserRoute(), Toast.LENGTH_SHORT).show();
         }
         if (item.getItemId() == 2) {
             AlertDialog.Builder builder =
@@ -232,27 +210,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    ViewPager.OnPageChangeListener onPageChangeListener = new ViewPager.OnPageChangeListener() {
-        @Override
-        public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-        }
-
-        @Override
-        public void onPageSelected(int position) {
-            toolbar.setTitle(pageAdapter.getMyPageTitle(position));
-            setSupportActionBar(toolbar);
-            if (position == 1)
-                plan = true;
-            else
-                plan = false;
-            invalidateOptionsMenu();
-        }
-
-        @Override
-        public void onPageScrollStateChanged(int state) {
-        }
-    };
 
     /******************
      * inner class

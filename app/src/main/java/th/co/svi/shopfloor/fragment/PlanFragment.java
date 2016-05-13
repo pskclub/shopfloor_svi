@@ -9,14 +9,12 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.GridView;
+import android.widget.ImageButton;
 import android.widget.TextView;
-import android.widget.Toast;
-
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -25,7 +23,6 @@ import java.util.List;
 
 import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
-import th.co.svi.shopfloor.activity.MainActivity;
 import th.co.svi.shopfloor.adapter.JobPlanListAdapter;
 import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
@@ -36,10 +33,10 @@ import static android.support.v4.app.ActivityCompat.invalidateOptionsMenu;
 /**
  * Created by nuuneoi on 11/16/2014.
  */
-public class MainFragment extends Fragment {
+public class PlanFragment extends Fragment {
     private GridView gvPlan;
-    String txtDate = null;
-    String txtDateTo = null;
+    private String txtDate = null;
+    private String txtDateTo = null;
     private int mYear = 0, mMonth = 0, mDay = 0;
     private JobPlanListAdapter planAdapter = null;
     private List<HashMap<String, String>> planList = null;
@@ -48,13 +45,15 @@ public class MainFragment extends Fragment {
     private Switcher switcher;
     private boolean first = true;
     private SwipeRefreshLayout layoutRefresh;
+    private TextView tvDate;
+    private ImageButton dateImg;
 
-    public MainFragment() {
+    public PlanFragment() {
         super();
     }
 
-    public static MainFragment newInstance() {
-        MainFragment fragment = new MainFragment();
+    public static PlanFragment newInstance() {
+        PlanFragment fragment = new PlanFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -70,7 +69,7 @@ public class MainFragment extends Fragment {
         calObject.add(Calendar.DAY_OF_YEAR, 1);
         txtDateTo = new SimpleDateFormat("yyyy-MM-dd").format(calObject.getTime());
         init(savedInstanceState);
-        member = new ShareData("MEMBER");
+
         if (savedInstanceState != null)
             onRestoreInstanceState(savedInstanceState);
     }
@@ -78,10 +77,13 @@ public class MainFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_plan, container, false);
         initInstances(rootView, savedInstanceState);
+        tvDate.setText(txtDate);
         loadPlan();
         layoutRefresh.setOnRefreshListener(onRefreshListener);
+        dateImg.setOnClickListener(dateClick);
+        tvDate.setOnClickListener(dateClick);
         return rootView;
     }
 
@@ -101,8 +103,10 @@ public class MainFragment extends Fragment {
         // Note: State of variable initialized here could not be saved
         //       in onSavedInstanceState
         gvPlan = (GridView) rootView.findViewById(R.id.gvPlan);
+        tvDate = (TextView) rootView.findViewById(R.id.tvDate);
         layoutRefresh = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
         layoutRefresh.setColorSchemeResources(R.color.colorPrimary);
+        dateImg = (ImageButton) rootView.findViewById(R.id.dateImg);
         switcher = new Switcher.Builder(getContext())
                 .addContentView(rootView.findViewById(R.id.hide)) //content member
                 .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
@@ -111,6 +115,7 @@ public class MainFragment extends Fragment {
                 .setProgressLabel((TextView) rootView.findViewById(R.id.progress_label)) // TextView within your progress member group that you want to change
                 .addEmptyView(rootView.findViewById(R.id.empty_view)) //empty placeholder member
                 .build();
+        member = new ShareData("MEMBER");
     }
 
     @Override
@@ -119,14 +124,6 @@ public class MainFragment extends Fragment {
         // Save Instance (Fragment level's variables) State here
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == 3) {
-            DialogFragment newFragment = new SelectDateFragment();
-            newFragment.show(getFragmentManager(), "DatePicker");
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @SuppressWarnings("UnusedParameters")
     private void onRestoreInstanceState(Bundle savedInstanceState) {
@@ -136,6 +133,14 @@ public class MainFragment extends Fragment {
     /**********************
      * Listener Zone
      **********************/
+    View.OnClickListener dateClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            DialogFragment newFragment = new SelectDateFragment();
+            newFragment.show(getFragmentManager(), "DatePicker");
+        }
+    };
+
     SwipeRefreshLayout.OnRefreshListener onRefreshListener = new SwipeRefreshLayout.OnRefreshListener() {
         @Override
         public void onRefresh() {
@@ -143,7 +148,7 @@ public class MainFragment extends Fragment {
         }
     };
 
-    public class SelectDateFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+    private class SelectDateFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -163,16 +168,13 @@ public class MainFragment extends Fragment {
         }
 
         public void populateSetDate(int year, int month, int day) {
-            String m = (month < 10 ? "0" : "") + month;
-            String d = (day < 10 ? "0" : "") + day;
             txtDate = (year + "-" + month + "-" + day);
             txtDateTo = (year + "-" + month + "-" + (day + 1));
-            txtDate = (year + "-" + m + "-" + d);
-            MainActivity.txtDate = txtDate;
             mDay = day;
             mMonth = month - 1;
             mYear = year;
             invalidateOptionsMenu(getActivity());
+            tvDate.setText(txtDate);
             loadPlan();
         }
 
