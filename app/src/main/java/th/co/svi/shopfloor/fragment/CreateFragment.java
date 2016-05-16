@@ -228,7 +228,6 @@ public class CreateFragment extends Fragment {
 
         }
 
-
         return true;
     }
 
