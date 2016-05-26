@@ -270,22 +270,21 @@ public class SendFragment extends Fragment {
                     } else {
                         if (workcenterNext != null) {
                             itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);
-                            insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty),
-                                    date.toString(), member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
+                            insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty),member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
                             HashMap<String, String> resultMobileMasternext = select.data_master(workorder, operation_actNext, workcenterNext);
                             if (resultMobileMasternext.size() == 0) {
                                 insert.data_master(workorder, operation_actNext, workcenterNext, orderqty, member.getUserID());
                             }
                         }
                         itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
-                        insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty), date.toString(),
+                        insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty),
                                 member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0");
 
 
                         if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + outputqty))) {
-                            update.dataMaster(workorder, operation_act, workcenter, "9", date.toString(), member.getUserID());
+                            update.dataMaster(workorder, operation_act, workcenter, "9", member.getUserID());
                         } else {
-                            update.dataMaster(workorder, operation_act, workcenter, "0", null, member.getUserID());
+                            update.dataMaster(workorder, operation_act, workcenter, "0",  member.getUserID());
                         }
                     }
                     Toast.makeText(getContext(), "Send Success!!", Toast.LENGTH_SHORT).show();

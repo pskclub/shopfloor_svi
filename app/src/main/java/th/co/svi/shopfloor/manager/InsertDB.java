@@ -41,8 +41,7 @@ public class InsertDB {
         return false;
     }
 
-    public boolean data_tranin(String workorder, String route_operation, String workcenter, String orderqty,
-                               String regis_date, String USER_ID, String contrainer_id, String item_key) {
+    public boolean data_tranin(String workorder, String route_operation, String workcenter, String orderqty,String USER_ID, String contrainer_id, String item_key) {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
@@ -64,8 +63,7 @@ public class InsertDB {
         return false;
     }
 
-    public boolean data_tranout(String workorder, String route_operation, String workcenter, String qty,
-                               String regis_date, String USER_ID, String contrainer_id,String item_key, String scrap) {
+    public boolean data_tranout(String workorder, String route_operation, String workcenter, String qty, String USER_ID, String contrainer_id,String item_key, String scrap) {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {

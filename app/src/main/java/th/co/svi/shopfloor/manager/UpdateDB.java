@@ -16,7 +16,7 @@ public class UpdateDB {
     }
 
     public boolean dataMaster(String workorder, String route_operation, String workcenter,
-                              String status, String close_jobdate, String update_by) {
+                              String status,String update_by) {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {

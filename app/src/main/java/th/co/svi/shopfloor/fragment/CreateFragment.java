@@ -214,7 +214,7 @@ public class CreateFragment extends Fragment {
                 insert.data_master(workorder, route_operation, workcenter,
                         orderqty, member.getUserID());
                 insert.data_tranin(workorder, dataOperationResult.get("route_operation"),
-                        workcenter, orderqty, regis_date, member.getUserID(), "-1", "1");
+                        workcenter, orderqty, member.getUserID(), "-1", "1");
                 Toast.makeText(getActivity(), "Start complete", Toast.LENGTH_SHORT).show();
                 getActivity().setResult(1);
                 getActivity().finish();
