@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -31,7 +30,6 @@ import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.CompoundBarcodeView;
 import com.squareup.otto.Subscribe;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -238,8 +236,6 @@ public class SendFragment extends Fragment {
                 sumTranIn = 0;
                 sumTranOut = 0;
                 sumTranResult = 0;
-                Date d = new Date();
-                final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
                 HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
                 if (resultMobileMaster.get("status_now").equals("9")) {
                     builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");

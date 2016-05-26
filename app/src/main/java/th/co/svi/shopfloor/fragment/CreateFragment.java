@@ -10,7 +10,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
-import android.text.format.DateFormat;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -30,7 +29,6 @@ import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.CompoundBarcodeView;
 import com.squareup.otto.Subscribe;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -50,7 +48,6 @@ public class CreateFragment extends Fragment {
     private ShareData member;
     private TextView txt_workcenter, txt_workorder, txt_plant,
             txt_projectno, txt_orderqty, txt_inputqty;
-    private String regis_date;
     private int status_insert = 0;
     private AlertDialog.Builder builder = null;
     private String workcenter, route_operation, workorder, plant, projectno, orderqty;
@@ -191,9 +188,6 @@ public class CreateFragment extends Fragment {
         barcodeView.pause();
         barcodeView.setVisibility(View.GONE);
         workorder = txtID.getText().toString();
-        Date d = new Date();
-        final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
-        regis_date = date.toString();
         if (workorder.equals("")) {
             switcher.showErrorView("Please, input or scan QR Code");
         } else {
@@ -207,9 +201,6 @@ public class CreateFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
             if (status_insert == 1) {
-                Date d = new Date();
-                final CharSequence date = DateFormat.format("yyyy-MM-dd hh:mm:ss", d.getTime());
-                regis_date = date.toString();
                 insert = new InsertDB();
                 insert.data_master(workorder, route_operation, workcenter,
                         orderqty, member.getUserID());
