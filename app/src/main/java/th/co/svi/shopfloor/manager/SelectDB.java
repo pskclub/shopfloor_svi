@@ -264,7 +264,7 @@ public class SelectDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 listData = new HashMap<>();
-                query = "select data1.* , data2.* from ( " +
+                query = "select data1.* , data2.* , CONVERT(VARCHAR(19),trans_date) as tdate from ( " +
                         "select TOP 2 * from ( " +
                         "SELECT workorder as wo " +
                         ",route_operation,item_key,contrainer_id,workcenter,qty,trans_date " +
@@ -299,7 +299,7 @@ public class SelectDB {
                 do {
                     listData.put("wo", result.getString("wo"));
                     listData.put("qty", result.getString("qty"));
-                    listData.put("trans_date", result.getString("trans_date"));
+                    listData.put("trans_date", result.getString("tdate"));
                     listData.put("OrderType", result.getString("OrderType"));
                     listData.put("Plant", result.getString("Plant"));
                     listData.put("Material", result.getString("Material"));
