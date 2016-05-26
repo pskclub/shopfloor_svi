@@ -21,7 +21,7 @@ public class UpdateDB {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 query = "UPDATE MOBILE_SHOPFLOOR_MASTER SET status = '" + status + "' " +
-                        ", close_jobdate = '" + close_jobdate + "' " +
+                        ", close_jobdate = GETDATE() " +
                         ", update_by = '" + update_by + "' , update_date = getdate()  " +
                         " where workorder = '" + workorder + "' and route_operation = '" + route_operation + "'" +
                         "and workcenter = '" + workcenter + "'  ";
