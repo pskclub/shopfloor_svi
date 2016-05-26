@@ -1,6 +1,5 @@
 package th.co.svi.shopfloor.fragment;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.media.MediaPlayer;
@@ -64,7 +63,6 @@ public class SendFragment extends Fragment {
     private AlertDialog.Builder builder = null;
     HashMap<String, String> orderResult = null;
     private Switcher switcher;
-    private ProgressDialog progress;
     private CompoundBarcodeView barcodeView;
 
     public SendFragment() {

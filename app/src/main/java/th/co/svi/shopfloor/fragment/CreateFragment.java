@@ -43,9 +43,6 @@ import th.co.svi.shopfloor.manager.SelectDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
 
-/**
- * Created by nuuneoi on 11/16/2014.
- */
 public class CreateFragment extends Fragment {
     private EditText txtID;
     private ImageButton btnSearch, btnQrcode;

@@ -12,7 +12,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.squareup.otto.Subscribe;
 
@@ -183,11 +182,7 @@ public class PendingFragment extends Fragment {
         protected Boolean doInBackground(Void... params) {
             SelectDB plan = new SelectDB();
             pendingList = plan.pending(member.getUserRoute());
-            if (pendingList != null) {
-                return true;
-            } else {
-                return false;
-            }
+            return pendingList != null;
 
         }
 

@@ -21,6 +21,7 @@ import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.adapter.ViewPagerAdapter;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
+import th.co.svi.shopfloor.fragment.ContrainerSearchFragment;
 import th.co.svi.shopfloor.fragment.PendingFragment;
 import th.co.svi.shopfloor.fragment.PlanFragment;
 import th.co.svi.shopfloor.manager.ShareData;
@@ -41,7 +42,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initInstances();
-        if (shareMember.getUserRoute().equals("CMC1") ||
+        if (shareMember.getUserRoute().equals("MANAGER")) {
+            displayViewManager(savedInstanceState);
+        } else if (shareMember.getUserRoute().equals("CMC1") ||
                 shareMember.getUserRoute().equals("CMS1") ||
                 shareMember.getUserRoute().equals("SMT1")) {
             displayViewPendingAndPlan();
@@ -49,6 +52,18 @@ public class MainActivity extends AppCompatActivity {
             displayViewPending(savedInstanceState);
         }
 
+
+    }
+
+    private void displayViewManager(Bundle savedInstanceState) {
+        viewPager.setVisibility(View.GONE);
+        tabLayout.setVisibility(View.GONE);
+        fabMenu.setVisibility(View.GONE);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .add(R.id.contentContainer, ContrainerSearchFragment.newInstance())
+                    .commit();
+        }
 
     }
 
