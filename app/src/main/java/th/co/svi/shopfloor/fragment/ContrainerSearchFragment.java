@@ -16,12 +16,15 @@ import com.google.zxing.integration.android.IntentIntegrator;
 import com.google.zxing.integration.android.IntentResult;
 import com.squareup.otto.Subscribe;
 
+import java.util.HashMap;
+
 import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.activity.CaptureActivity;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.SelectDB;
+import th.co.svi.shopfloor.manager.ShareData;
 
 
 /**
@@ -34,6 +37,9 @@ public class ContrainerSearchFragment extends Fragment {
     private DetailTask loadDetailAsync;
     private SelectDB select;
     private String workorder;
+    private ShareData member;
+    private TextView txtWorkorder,txtOrderType,txtPlant,txtProjectNo,txtdes,txtOrderQty,txtFrom,txtTo,txtQty,txtDate;
+    private HashMap<String, String> detail = null;
 
     public ContrainerSearchFragment() {
         super();
@@ -87,6 +93,17 @@ public class ContrainerSearchFragment extends Fragment {
         txtId = (EditText) rootView.findViewById(R.id.txtID);
         btnQrcode = (ImageButton) rootView.findViewById(R.id.btnQrcode);
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
+        txtDate = (TextView) rootView.findViewById(R.id.txt_date);
+        txtdes = (TextView) rootView.findViewById(R.id.txt_des);
+        txtFrom = (TextView) rootView.findViewById(R.id.txt_from);
+        txtOrderQty = (TextView) rootView.findViewById(R.id.txt_order_qty);
+        txtOrderType = (TextView) rootView.findViewById(R.id.txt_type);
+        txtQty = (TextView) rootView.findViewById(R.id.txt_qty);
+        txtProjectNo = (TextView) rootView.findViewById(R.id.txt_projectno);
+        txtTo = (TextView) rootView.findViewById(R.id.txt_to);
+        txtPlant = (TextView) rootView.findViewById(R.id.txt_plant);
+        txtWorkorder = (TextView) rootView.findViewById(R.id.txt_workorder);
+
         switcher = new Switcher.Builder(getContext())
                 .addContentView(rootView.findViewById(R.id.cardContent)) //content member
                 .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
@@ -94,7 +111,7 @@ public class ContrainerSearchFragment extends Fragment {
                 .setErrorLabel((TextView) rootView.findViewById(R.id.error_label)) // TextView within your error member group that you want to change
                 .setProgressLabel((TextView) rootView.findViewById(R.id.progress_label)) // TextView within your progress member group that you want to change
                 .build();
-
+        member = new ShareData("MEMBER");
     }
 
     @Override
@@ -168,68 +185,33 @@ public class ContrainerSearchFragment extends Fragment {
         @Override
         protected Boolean doInBackground(Void... params) {
             select = new SelectDB();
-           /* dataMasterResult = select.data_master(workorder);
-            if (dataMasterResult == null) {
-                connect = false;
-                return false;
-
+            detail = select.container_detail(workorder);
+            if (detail != null) {
+                return true;
             } else {
-                if (dataMasterResult.size() > 0) {
-                    err = "Sorry! Work Order : " + workorder +
-                            " Start job complete.";
-                    return false;
-                }
-                dataOperationResult = select.data_operation(workorder);
-                if (dataOperationResult != null) {
-                    if (dataOperationResult.size() == 0) {
-                        err = "Not found in database (Operation Data) !!!\nPlease, contact administrator (MIS)";
-                        return false;
-                    }
-                    workcenter = dataOperationResult.get("workcenter");
-                    route_operation = dataOperationResult.get("route_operation");
-                    if (!member.getUserRoute().equals(workcenter)) {
-                        err = "Sorry! Work Order : " + workorder +
-                                " don\'t pass operation : " + member.getUserRoute();
-                        return false;
-
-                    } else {
-                        dataOrderResult = select.data_order(workorder);
-                        if (dataOrderResult != null) {
-                            if (dataOperationResult.size() == 0) {
-                                err = "Not found in database (Order Data) !!! \n" +
-                                        "Please, contact administrator (MIS)";
-                                return false;
-                            }
-                            status_insert = 1;
-                        } else {
-                            connect = false;
-                            return false;
-                        }
-                        plant = dataOrderResult.get("plant");
-                        projectno = dataOrderResult.get("projectno");
-                        orderqty = dataOrderResult.get("orderqty");
-                        return true;
-
-                    }
-                } else {
-                    connect = false;
-                    return false;
-
-                }
-            }*/
-            return true;
+                return false;
+            }
         }
 
         @Override
         protected void onPostExecute(Boolean success) {
             if (success) {
-           /*     txt_workcenter.setText(route_operation + " - " + workcenter);
-                txt_workorder.setText(workorder);
-                txt_plant.setText(plant);
-                txt_projectno.setText(projectno);
-                txt_orderqty.setText(orderqty);
-                txt_inputqty.setText(orderqty);*/
-                switcher.showContentView();
+                if(detail.size() == 0){
+                    switcher.showErrorView("Not Found ");
+                }else{
+                    txtDate.setText(detail.get("trans_date"));
+                    txtdes.setText(detail.get("Description"));
+                    txtOrderQty.setText(detail.get("Ord_QTY_True"));
+                    txtOrderType.setText(detail.get("OrderType"));
+                    txtQty.setText(detail.get("qty"));
+                    txtProjectNo.setText(detail.get("Material"));
+                    txtPlant.setText(detail.get("Plant"));
+                    txtWorkorder.setText(detail.get("wo"));
+                    txtFrom.setText(detail.get("workcenter_out"));
+                    txtTo.setText(detail.get("workcenter_in"));
+                    switcher.showContentView();
+                }
+
             } else {
                 if (!connect) {
                     switcher.showErrorView("Can't connect to Server");

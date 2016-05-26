@@ -257,27 +257,27 @@ public class SelectDB {
         return listData;
     }
 
-    public List<HashMap<String, String>> container_detail(String qrcode) {
+    public HashMap<String, String> container_detail(String qrcode) {
         ResultSet result = null;
-        List<HashMap<String, String>> listData = null;
+        HashMap<String, String> listData = null;
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                listData = new ArrayList<>();
+                listData = new HashMap<>();
                 query = "select data1.* , data2.* from ( " +
                         "select TOP 2 * from ( " +
                         "SELECT workorder as wo " +
                         ",route_operation,item_key,contrainer_id,workcenter,qty,trans_date " +
-                        ",'IN' as type_case" +
-                        "  FROM [MOBILE_SHOPFLOOR_TRANIN]" +
+                        ",'IN' as type_case " +
+                        "  FROM [MOBILE_SHOPFLOOR_TRANIN] " +
                         "  where contrainer_id =  '"+ qrcode +"'  " +
-                        " union all" +
+                        " union all " +
                         "SELECT workorder as " +
-                        "wo,route_operation,item_key,contrainer_id,workcenter,qty,trans_date" +
+                        "wo,route_operation,item_key,contrainer_id,workcenter,qty,trans_date " +
                         ",'OUT' as type_case" +
-                        "  FROM [MOBILE_SHOPFLOOR_TRANOUT]" +
+                        "  FROM [MOBILE_SHOPFLOOR_TRANOUT] " +
                         "where contrainer_id = '"+ qrcode +"' " +
-                        ") as chk_contrainer" +
+                        ") as chk_contrainer " +
                         "order by trans_date desc ,type_case ) as data1 " +
                         "left outer join " +
                         "( Select * FROM [SAP_ORDER_DATA] ) as data2 " +
@@ -296,21 +296,19 @@ public class SelectDB {
             if (result != null && result.next()) {
 
                 do {
-                    HashMap<String, String> detail = new HashMap<>();
-                    detail.put("wo", result.getString("wo"));
-                    detail.put("qty", result.getString("qty"));
-                    detail.put("trans_date", result.getString("trans_date"));
-                    detail.put("OrderType", result.getString("OrderType"));
-                    detail.put("Plant", result.getString("Plant"));
-                    detail.put("Material", result.getString("Material"));
-                    detail.put("Description", result.getString("Description"));
-                    detail.put("Ord_QTY_True", result.getString("Ord_QTY_True"));
+                    listData.put("wo", result.getString("wo"));
+                    listData.put("qty", result.getString("qty"));
+                    listData.put("trans_date", result.getString("trans_date"));
+                    listData.put("OrderType", result.getString("OrderType"));
+                    listData.put("Plant", result.getString("Plant"));
+                    listData.put("Material", result.getString("Material"));
+                    listData.put("Description", result.getString("Description"));
+                    listData.put("Ord_QTY_True", result.getString("Ord_QTY_True"));
                     if (result.getString("type_case").equals("OUT")) {
-                        detail.put("workcenter_out", result.getString("workcenter"));
+                        listData.put("workcenter_out", result.getString("workcenter"));
                     }else {
-                        detail.put("workcenter_in", result.getString("workcenter"));
+                        listData.put("workcenter_in", result.getString("workcenter"));
                     }
-                    listData.add(detail);
                 } while (result.next());
                 return listData;
             }
