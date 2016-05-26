@@ -36,7 +36,7 @@
                     android:layout_marginLeft="8dp"
                     android:layout_marginRight="8dp"
                     android:layout_weight="5"
-                    android:hint="ID"
+                    android:hint="Work Order ID"
                     android:imeOptions="actionSearch"
                     android:inputType="number"
                     android:selectAllOnFocus="true" />

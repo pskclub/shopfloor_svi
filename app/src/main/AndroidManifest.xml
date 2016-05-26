@@ -31,8 +31,8 @@
             android:name="io.fabric.ApiKey"
             android:value="f12b6520c3e3adeea306654abc6376206bb7b147" />
 
-        <activity android:name=".activity.SendActivity"  android:windowSoftInputMode="stateHidden" ></activity>
-        <activity android:name=".activity.CaptureActivity"  android:windowSoftInputMode="stateHidden" ></activity>
+        <activity android:name=".activity.SendActivity"  android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".activity.CaptureActivity"  android:windowSoftInputMode="stateHidden" />
     </application>
 
 </manifest>
