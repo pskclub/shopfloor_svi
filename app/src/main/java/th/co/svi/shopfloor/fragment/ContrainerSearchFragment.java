@@ -5,9 +5,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -24,21 +27,20 @@ import th.co.svi.shopfloor.activity.CaptureActivity;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.SelectDB;
-import th.co.svi.shopfloor.manager.ShareData;
 
 
 /**
  * Created by nuuneoi on 11/16/2014.
  */
 public class ContrainerSearchFragment extends Fragment {
+    private CardView cardContent;
     private EditText txtId;
     private ImageButton btnQrcode, btnSearch;
     private Switcher switcher;
     private DetailTask loadDetailAsync;
     private SelectDB select;
     private String workorder;
-    private ShareData member;
-    private TextView txtWorkorder,txtOrderType,txtPlant,txtProjectNo,txtdes,txtOrderQty,txtFrom,txtTo,txtQty,txtDate;
+    private TextView txtWorkorder, txtOrderType, txtPlant, txtProjectNo, txtdes, txtOrderQty, txtFrom, txtTo, txtQty, txtDate;
     private HashMap<String, String> detail = null;
 
     public ContrainerSearchFragment() {
@@ -65,18 +67,9 @@ public class ContrainerSearchFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_contrainer_search, container, false);
         initInstances(rootView, savedInstanceState);
-        btnQrcode.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                new IntentIntegrator(getActivity()).setCaptureActivity(CaptureActivity.class).initiateScan();
-            }
-        });
-        btnSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loadDetail();
-            }
-        });
+        txtId.setOnEditorActionListener(textOnEditorActionListener);
+        btnQrcode.setOnClickListener(qrcodeClick);
+        btnSearch.setOnClickListener(searchClick);
         return rootView;
     }
 
@@ -103,7 +96,7 @@ public class ContrainerSearchFragment extends Fragment {
         txtTo = (TextView) rootView.findViewById(R.id.txt_to);
         txtPlant = (TextView) rootView.findViewById(R.id.txt_plant);
         txtWorkorder = (TextView) rootView.findViewById(R.id.txt_workorder);
-
+        cardContent = (CardView) rootView.findViewById(R.id.cardContent);
         switcher = new Switcher.Builder(getContext())
                 .addContentView(rootView.findViewById(R.id.cardContent)) //content member
                 .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
@@ -111,7 +104,7 @@ public class ContrainerSearchFragment extends Fragment {
                 .setErrorLabel((TextView) rootView.findViewById(R.id.error_label)) // TextView within your error member group that you want to change
                 .setProgressLabel((TextView) rootView.findViewById(R.id.progress_label)) // TextView within your progress member group that you want to change
                 .build();
-        member = new ShareData("MEMBER");
+        cardContent.setVisibility(View.GONE);
     }
 
     @Override
@@ -168,6 +161,32 @@ public class ContrainerSearchFragment extends Fragment {
 
     }
 
+    View.OnClickListener qrcodeClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            new IntentIntegrator(getActivity()).setCaptureActivity(CaptureActivity.class).initiateScan();
+        }
+    };
+    View.OnClickListener searchClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            loadDetail();
+        }
+    };
+    TextView.OnEditorActionListener textOnEditorActionListener = new TextView.OnEditorActionListener() {
+        @Override
+        public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                    actionId == EditorInfo.IME_ACTION_DONE ||
+                    event.getAction() == KeyEvent.ACTION_DOWN &&
+                            event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                loadDetail();
+                return true;
+            }
+            return false;
+        }
+    };
+
     /**********************
      * inner Class Zone
      **********************/
@@ -196,9 +215,9 @@ public class ContrainerSearchFragment extends Fragment {
         @Override
         protected void onPostExecute(Boolean success) {
             if (success) {
-                if(detail.size() == 0){
+                if (detail.size() == 0) {
                     switcher.showErrorView("Not Found ");
-                }else{
+                } else {
                     txtDate.setText(detail.get("trans_date"));
                     txtdes.setText(detail.get("Description"));
                     txtOrderQty.setText(detail.get("Ord_QTY_True"));
