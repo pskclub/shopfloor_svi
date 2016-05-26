@@ -116,13 +116,13 @@ public class SelectDB {
                         ", isnull(data_in.qty_in,0)  - isnull(data_out.qty_out,0) as qty_bal from  ( " +
                         " SELECT [workorder]  ,[route_operation] ,[workcenter] " +
                         "      ,sum([qty]) as qty_in " +
-                        "  FROM [SAPWI_DEV_Study].[dbo].[MOBILE_SHOPFLOOR_TRANIN] " +
+                        "  FROM MOBILE_SHOPFLOOR_TRANIN " +
                         "  where workcenter ='" + USER_ROUTE + "' " +
                         "  group by  [workorder] ,[route_operation]  ,[workcenter] ) as data_in " +
                         "  left outer join  " +
                         "  (SELECT [workorder] ,[route_operation]  ,[workcenter] " +
                         "      ,sum([qty]) as qty_out " +
-                        "  FROM [SAPWI_DEV_Study].[dbo].[MOBILE_SHOPFLOOR_TRANOUT] " +
+                        "  FROM MOBILE_SHOPFLOOR_TRANOUT " +
                         "  where workcenter = '" + USER_ROUTE + "' " +
                         "  group by [workorder] ,[route_operation] ,[workcenter] ) as data_out " +
                         "  on data_in.[workorder] = data_out.[workorder] and  data_in.[workcenter] = data_out.[workcenter] " +
@@ -247,6 +247,70 @@ public class SelectDB {
                     planning.put("operation_act", result.getString("Opertion_act"));
                     planning.put("workcenter_true", result.getString("Work_Center_True"));
                     listData.add(planning);
+                } while (result.next());
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        }
+
+        return listData;
+    }
+
+    public List<HashMap<String, String>> container_detail(String qrcode) {
+        ResultSet result = null;
+        List<HashMap<String, String>> listData = null;
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = new ArrayList<>();
+                query = "select data1.* , data2.* from ( " +
+                        "select TOP 2 * from ( " +
+                        "SELECT workorder as wo " +
+                        ",route_operation,item_key,contrainer_id,workcenter,qty,trans_date " +
+                        ",'IN' as type_case" +
+                        "  FROM [MOBILE_SHOPFLOOR_TRANIN]" +
+                        "  where contrainer_id =  '"+ qrcode +"'  " +
+                        " union all" +
+                        "SELECT workorder as " +
+                        "wo,route_operation,item_key,contrainer_id,workcenter,qty,trans_date" +
+                        ",'OUT' as type_case" +
+                        "  FROM [MOBILE_SHOPFLOOR_TRANOUT]" +
+                        "where contrainer_id = '"+ qrcode +"' " +
+                        ") as chk_contrainer" +
+                        "order by trans_date desc ,type_case ) as data1 " +
+                        "left outer join " +
+                        "( Select * FROM [SAP_ORDER_DATA] ) as data2 " +
+                        "on data1.wo = data2.WorkOrder";
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+
+                do {
+                    HashMap<String, String> detail = new HashMap<>();
+                    detail.put("wo", result.getString("wo"));
+                    detail.put("qty", result.getString("qty"));
+                    detail.put("trans_date", result.getString("trans_date"));
+                    detail.put("OrderType", result.getString("OrderType"));
+                    detail.put("Plant", result.getString("Plant"));
+                    detail.put("Material", result.getString("Material"));
+                    detail.put("Description", result.getString("Description"));
+                    detail.put("Ord_QTY_True", result.getString("Ord_QTY_True"));
+                    if (result.getString("type_case").equals("OUT")) {
+                        detail.put("workcenter_out", result.getString("workcenter"));
+                    }else {
+                        detail.put("workcenter_in", result.getString("workcenter"));
+                    }
+                    listData.add(detail);
                 } while (result.next());
                 return listData;
             }
