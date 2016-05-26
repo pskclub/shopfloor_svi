@@ -280,7 +280,7 @@ public class SelectDB {
                         ") as chk_contrainer " +
                         "order by trans_date desc ,type_case ) as data1 " +
                         "left outer join " +
-                        "( Select * , case when Ord_QTY_True is null then Ord_QTY else Ord_QTY_True end as qty_order " +
+                        "( Select * ,  CAST(case when Ord_QTY_True is null then Ord_QTY else Ord_QTY_True end as int) as qty_ok " +
                         "FROM [SAP_ORDER_DATA] ) as data2 " +
                         "on data1.wo = data2.WorkOrder";
                 Statement stmt = con.createStatement();
@@ -304,7 +304,7 @@ public class SelectDB {
                     listData.put("Plant", result.getString("Plant"));
                     listData.put("Material", result.getString("Material"));
                     listData.put("Description", result.getString("Description"));
-                    listData.put("Ord_QTY_True", result.getString("qty_order"));
+                    listData.put("Ord_QTY_True", result.getString("qty_ok"));
                     if (result.getString("type_case").equals("OUT")) {
                         listData.put("workcenter_out", result.getString("workcenter"));
                     }else {
