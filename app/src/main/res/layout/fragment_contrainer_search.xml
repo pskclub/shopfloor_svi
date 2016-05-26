@@ -70,7 +70,7 @@
                 android:layout_marginLeft="16dp"
                 android:layout_marginRight="16dp"
                 android:foreground="?android:attr/selectableItemBackground"
-                android:visibility="visible"
+                android:visibility="gone"
                 card_view:cardCornerRadius="4dp">
 
                 <LinearLayout
