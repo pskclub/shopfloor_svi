@@ -205,13 +205,12 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.fabSend:
                     animateFAB();
                     Intent iSend = new Intent(MainActivity.this, SendActivity.class);
-                    startActivityForResult(iSend, 2);
+                    startActivityForResult(iSend, 1);
                     break;
                 case R.id.fabCreate:
                     animateFAB();
                     Intent i = new Intent(MainActivity.this, CreateActivity.class);
                     startActivityForResult(i, 1);
-
                     break;
             }
         }

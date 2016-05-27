@@ -35,6 +35,7 @@ import java.util.List;
 
 import pl.aprilapps.switcher.Switcher;
 import th.co.svi.shopfloor.R;
+import th.co.svi.shopfloor.activity.CaptureActivity;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.manager.InsertDB;
@@ -46,7 +47,7 @@ import th.co.svi.shopfloor.manager.UpdateDB;
 public class SendFragment extends Fragment {
     TextView txt_workcenter, txt_nextcenter, txt_workorder, txt_plant, txt_project, txt_orderqty,
             txt_inputqty, txt_starttime, txt_contrainer;
-    ImageButton btnSearch, btnQrcode;
+    ImageButton btnSearch, btnQrcode, btnQrcodeContainer;
     CardView cardContent;
     EditText txtID, edt_outputqty;
     boolean status_do = false, btnsave = false;
@@ -100,6 +101,7 @@ public class SendFragment extends Fragment {
         btnSearch.setOnClickListener(btnOnClickListener);
         txtID.setOnEditorActionListener(textViewEditerListener);
         barcodeView.decodeContinuous(callback);
+        btnQrcodeContainer.setOnClickListener(qrcodeClick);
         return rootView;
     }
 
@@ -149,13 +151,11 @@ public class SendFragment extends Fragment {
 
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null) {
-            if (!(result.getContents() == null)) {
-                txtID.setText(result.getContents());
-                txtID.setSelection(txtID.getText().length());
-                sendJob();
-
+            if (result.getContents() != null) {
+                txt_contrainer.setText(result.getContents());
             }
         }
+
     }
 
     @SuppressWarnings("UnusedParameters")
@@ -178,6 +178,7 @@ public class SendFragment extends Fragment {
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
         btnQrcode = (ImageButton) rootView.findViewById(R.id.btnQrcode);
         barcodeView = (CompoundBarcodeView) rootView.findViewById(R.id.barcode_scanner);
+        btnQrcodeContainer = (ImageButton) rootView.findViewById(R.id.btnQrcodeContainer);
         switcher = new Switcher.Builder(getContext())
                 .addContentView(rootView.findViewById(R.id.cardContent)) //content member
                 .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
@@ -236,6 +237,12 @@ public class SendFragment extends Fragment {
                 sumTranIn = 0;
                 sumTranOut = 0;
                 sumTranResult = 0;
+                if (contrainer.equals("")) {
+                    builder.setMessage("กรุณากรอก Conrainer ID้");
+                    builder.setPositiveButton("OK", null);
+                    builder.show();
+                    return false;
+                }
                 HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
                 if (resultMobileMaster.get("status_now").equals("9")) {
                     builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
@@ -266,7 +273,7 @@ public class SendFragment extends Fragment {
                     } else {
                         if (workcenterNext != null) {
                             itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);
-                            insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty),member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
+                            insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty), member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
                             HashMap<String, String> resultMobileMasternext = select.data_master(workorder, operation_actNext, workcenterNext);
                             if (resultMobileMasternext.size() == 0) {
                                 insert.data_master(workorder, operation_actNext, workcenterNext, orderqty, member.getUserID());
@@ -280,7 +287,7 @@ public class SendFragment extends Fragment {
                         if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + outputqty))) {
                             update.dataMaster(workorder, operation_act, workcenter, "9", member.getUserID());
                         } else {
-                            update.dataMaster(workorder, operation_act, workcenter, "0",  member.getUserID());
+                            update.dataMaster(workorder, operation_act, workcenter, "0", member.getUserID());
                         }
                     }
                     Toast.makeText(getContext(), "Send Success!!", Toast.LENGTH_SHORT).show();
@@ -309,6 +316,8 @@ public class SendFragment extends Fragment {
     private void onRestoreInstanceState(Bundle savedInstanceState) {
         // Restore Instance (Fragment level's variables) State here
     }
+
+
 
     /*******
      * listenner Zone
@@ -357,6 +366,13 @@ public class SendFragment extends Fragment {
 
         @Override
         public void possibleResultPoints(List<ResultPoint> resultPoints) {
+        }
+    };
+
+    View.OnClickListener qrcodeClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            new IntentIntegrator(getActivity()).setCaptureActivity(CaptureActivity.class).initiateScan();
         }
     };
 
