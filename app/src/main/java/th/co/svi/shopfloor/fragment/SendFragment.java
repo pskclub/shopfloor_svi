@@ -46,14 +46,14 @@ import th.co.svi.shopfloor.manager.UpdateDB;
 
 public class SendFragment extends Fragment {
     TextView txt_workcenter, txt_nextcenter, txt_workorder, txt_plant, txt_project, txt_orderqty,
-            txt_inputqty, txt_starttime, txt_contrainer,txt_machine;
-    ImageButton btnSearch, btnQrcode, btnQrcodeContainer,btnQrcodeMachine;
+            txt_inputqty, txt_starttime, txt_contrainer, txt_machine;
+    ImageButton btnSearch, btnQrcode, btnQrcodeContainer, btnQrcodeMachine;
     CardView cardContent;
     EditText txtID, edt_outputqty;
     boolean status_do = false, btnsave = false;
     String workcenter = null, operation_act = null, qty_labor = null, workorder = null, plant = null, project = null, orderqty = null,
             starttime = null, workcenterNext = null, workcenter_true = null, operation_actNext = null, workcenter_trueNext = null, contrainer = null;
-    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, itemKeyIn = 0, itemKeyOut = 0, outputqty = 0;
+    int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, itemKeyIn = 0, itemKeyOut = 0, outputqty = 0, qrcodeCheck = 0;
     ShareData member;
     SelectDB select;
     UpdateDB update;
@@ -153,7 +153,12 @@ public class SendFragment extends Fragment {
         IntentResult result = IntentIntegrator.parseActivityResult(requestCode, resultCode, data);
         if (result != null) {
             if (result.getContents() != null) {
-                txt_contrainer.setText(result.getContents());
+                if (qrcodeCheck == R.id.btnQrcodeContainer) {
+                    txt_contrainer.setText(result.getContents());
+                } else if (qrcodeCheck == R.id.btnQrcodeMachine) {
+                    txt_machine.setText(result.getContents());
+                }
+
             }
         }
 
@@ -246,7 +251,8 @@ public class SendFragment extends Fragment {
                     builder.setPositiveButton("OK", null);
                     builder.show();
                     return false;
-                } if (txt_machine.getText().toString().equals("")) {
+                }
+                if (txt_machine.getText().toString().equals("")) {
                     builder.setMessage("กรุณากรอก Machine ID");
                     builder.setPositiveButton("OK", null);
                     builder.show();
@@ -291,7 +297,7 @@ public class SendFragment extends Fragment {
                         itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
                         String qty_labor = select.qty_labor(txt_machine.getText().toString());
                         insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty),
-                                member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0",txt_machine.getText().toString(),qty_labor);
+                                member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0", txt_machine.getText().toString(), qty_labor);
 
 
                         if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + outputqty))) {
@@ -326,7 +332,6 @@ public class SendFragment extends Fragment {
     private void onRestoreInstanceState(Bundle savedInstanceState) {
         // Restore Instance (Fragment level's variables) State here
     }
-
 
 
     /*******
@@ -382,7 +387,14 @@ public class SendFragment extends Fragment {
     View.OnClickListener qrcodeClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            new IntentIntegrator(getActivity()).setCaptureActivity(CaptureActivity.class).initiateScan();
+            if (v.getId() == R.id.btnQrcodeMachine) {
+                qrcodeCheck = R.id.btnQrcodeMachine;
+                new IntentIntegrator(getActivity()).setCaptureActivity(CaptureActivity.class).initiateScan();
+            } else if (v.getId() == R.id.btnQrcodeContainer) {
+                qrcodeCheck = R.id.btnQrcodeContainer;
+                new IntentIntegrator(getActivity()).setCaptureActivity(CaptureActivity.class).initiateScan();
+            }
+
         }
     };
 
