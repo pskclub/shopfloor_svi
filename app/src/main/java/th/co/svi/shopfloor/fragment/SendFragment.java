@@ -46,12 +46,12 @@ import th.co.svi.shopfloor.manager.UpdateDB;
 
 public class SendFragment extends Fragment {
     TextView txt_workcenter, txt_nextcenter, txt_workorder, txt_plant, txt_project, txt_orderqty,
-            txt_inputqty, txt_starttime, txt_contrainer;
-    ImageButton btnSearch, btnQrcode, btnQrcodeContainer;
+            txt_inputqty, txt_starttime, txt_contrainer,txt_machine;
+    ImageButton btnSearch, btnQrcode, btnQrcodeContainer,btnQrcodeMachine;
     CardView cardContent;
     EditText txtID, edt_outputqty;
     boolean status_do = false, btnsave = false;
-    String workcenter = null, operation_act = null, workorder = null, plant = null, project = null, orderqty = null,
+    String workcenter = null, operation_act = null, qty_labor = null, workorder = null, plant = null, project = null, orderqty = null,
             starttime = null, workcenterNext = null, workcenter_true = null, operation_actNext = null, workcenter_trueNext = null, contrainer = null;
     int sumTranIn = 0, sumTranOut = 0, sumTranResult = 0, itemKeyIn = 0, itemKeyOut = 0, outputqty = 0;
     ShareData member;
@@ -102,6 +102,7 @@ public class SendFragment extends Fragment {
         txtID.setOnEditorActionListener(textViewEditerListener);
         barcodeView.decodeContinuous(callback);
         btnQrcodeContainer.setOnClickListener(qrcodeClick);
+        btnQrcodeMachine.setOnClickListener(qrcodeClick);
         return rootView;
     }
 
@@ -175,10 +176,12 @@ public class SendFragment extends Fragment {
         txt_inputqty = (TextView) rootView.findViewById(R.id.txt_inputqty_send_job);
         txt_starttime = (TextView) rootView.findViewById(R.id.txt_starttime_send_job);
         txt_contrainer = (TextView) rootView.findViewById(R.id.txt_contrainer);
+        txt_machine = (TextView) rootView.findViewById(R.id.txt_machine);
         btnSearch = (ImageButton) rootView.findViewById(R.id.btnSearch);
         btnQrcode = (ImageButton) rootView.findViewById(R.id.btnQrcode);
         barcodeView = (CompoundBarcodeView) rootView.findViewById(R.id.barcode_scanner);
         btnQrcodeContainer = (ImageButton) rootView.findViewById(R.id.btnQrcodeContainer);
+        btnQrcodeMachine = (ImageButton) rootView.findViewById(R.id.btnQrcodeMachine);
         switcher = new Switcher.Builder(getContext())
                 .addContentView(rootView.findViewById(R.id.cardContent)) //content member
                 .addErrorView(rootView.findViewById(R.id.error_view)) //error view member
@@ -215,6 +218,7 @@ public class SendFragment extends Fragment {
         workcenter_true = null;
         operation_actNext = null;
         workcenter_trueNext = null;
+        qty_labor = null;
 
         if (workorder.equals("") || workorder == null) {
             switcher.showErrorView("Please, input or scan QR Code");
@@ -238,7 +242,12 @@ public class SendFragment extends Fragment {
                 sumTranOut = 0;
                 sumTranResult = 0;
                 if (contrainer.equals("")) {
-                    builder.setMessage("กรุณากรอก Conrainer ID้");
+                    builder.setMessage("กรุณากรอก Conrainer ID");
+                    builder.setPositiveButton("OK", null);
+                    builder.show();
+                    return false;
+                } if (txt_machine.getText().toString().equals("")) {
+                    builder.setMessage("กรุณากรอก Machine ID");
                     builder.setPositiveButton("OK", null);
                     builder.show();
                     return false;
@@ -280,8 +289,9 @@ public class SendFragment extends Fragment {
                             }
                         }
                         itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
+                        String qty_labor = select.qty_labor(txt_machine.getText().toString());
                         insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty),
-                                member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0");
+                                member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0",txt_machine.getText().toString(),qty_labor);
 
 
                         if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + outputqty))) {

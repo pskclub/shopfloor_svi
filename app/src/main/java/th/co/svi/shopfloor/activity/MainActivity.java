@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         if (shareMember.getUserRoute().equals("MANAGER")) {
             displayViewManager(savedInstanceState);
         } else if (shareMember.getUserRoute().equals("CMC1") ||
-                shareMember.getUserRoute().equals("CMS1") ||
+                shareMember.getUserRoute().equals( "CMS1") ||
                 shareMember.getUserRoute().equals("SMT1")) {
             displayViewPendingAndPlan();
         } else {

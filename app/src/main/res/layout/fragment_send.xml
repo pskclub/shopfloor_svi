@@ -318,7 +318,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:gravity="center_vertical"
-                            android:text="Handling ID"
+                            android:text="Machine ID"
                             android:textSize="15dp"
                             android:textStyle="bold" />
 
@@ -329,13 +329,59 @@
                             android:layout_height="wrap_content">
 
                             <EditText
+                                android:id="@+id/txt_machine"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="4"
+                                android:gravity="center_vertical"
+                                android:imeOptions="actionDone"
+                                android:inputType="text"
+                                android:textColor="@color/colorPrimary"
+                                android:textSize="20dp" />
+
+                            <ImageButton
+                                android:id="@+id/btnQrcodeMachine"
+                                android:layout_width="0dp"
+                                android:layout_height="match_parent"
+                                android:padding="4dp"
+                                android:layout_gravity="center"
+                                android:layout_weight="1"
+                                android:background="@drawable/border_black"
+                                android:src="@drawable/ic_qrcode_black" />
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:layout_weight="1"
+                            android:gravity="center_vertical"
+                            android:text="Handling ID"
+                            android:textSize="15dp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="2"
+                            android:background="@drawable/border_black">
+
+                            <EditText
                                 android:id="@+id/txt_contrainer"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="4"
                                 android:gravity="center_vertical"
                                 android:imeOptions="actionDone"
-                                android:inputType="number"
+                                android:inputType="text"
                                 android:textColor="@color/colorPrimary"
                                 android:textSize="20dp" />
 
@@ -343,10 +389,10 @@
                                 android:id="@+id/btnQrcodeContainer"
                                 android:layout_width="0dp"
                                 android:layout_height="match_parent"
-                                android:padding="4dp"
                                 android:layout_gravity="center"
                                 android:layout_weight="1"
                                 android:background="@drawable/border_black"
+                                android:padding="4dp"
                                 android:src="@drawable/ic_qrcode_black" />
                         </LinearLayout>
 

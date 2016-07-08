@@ -220,6 +220,35 @@ public class SelectDB {
         return listData;
     }
 
+    public String qty_labor(String machine_id) {
+        ResultSet result = null;
+        String listData = "0";
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                listData = "0";
+                query = " select * from MC_OVERHEAD where Line_Name = '" + machine_id + "' ";
+                Statement stmt = con.createStatement();
+                result = stmt.executeQuery(query);
+            } else {
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErrPendding", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        try {
+            if (result != null && result.next()) {
+                listData = result.getString("Operators_Total");
+                return listData;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErrPendding", e.getMessage());
+        }
+        return listData;
+    }
+
     public List<HashMap<String, String>> sap_data_operation(String qrcode) {
         ResultSet result = null;
         List<HashMap<String, String>> listData = null;
@@ -270,13 +299,13 @@ public class SelectDB {
                         ",route_operation,item_key,contrainer_id,workcenter,qty,trans_date " +
                         ",'IN' as type_case " +
                         "  FROM [MOBILE_SHOPFLOOR_TRANIN] " +
-                        "  where contrainer_id =  '"+ qrcode +"'  " +
+                        "  where contrainer_id =  '" + qrcode + "'  " +
                         " union all " +
                         "SELECT workorder as " +
                         "wo,route_operation,item_key,contrainer_id,workcenter,qty,trans_date " +
                         ",'OUT' as type_case" +
                         "  FROM [MOBILE_SHOPFLOOR_TRANOUT] " +
-                        "where contrainer_id = '"+ qrcode +"' " +
+                        "where contrainer_id = '" + qrcode + "' " +
                         ") as chk_contrainer " +
                         "order by trans_date desc ,type_case ) as data1 " +
                         "left outer join " +
@@ -307,7 +336,7 @@ public class SelectDB {
                     listData.put("Ord_QTY_True", result.getString("qty_ok"));
                     if (result.getString("type_case").equals("OUT")) {
                         listData.put("workcenter_out", result.getString("workcenter"));
-                    }else {
+                    } else {
                         listData.put("workcenter_in", result.getString("workcenter"));
                     }
                 } while (result.next());
@@ -389,7 +418,6 @@ public class SelectDB {
 
         return listData;
     }
-
 
 
     public HashMap<String, String> data_master(String qrcode) {

@@ -63,14 +63,15 @@ public class InsertDB {
         return false;
     }
 
-    public boolean data_tranout(String workorder, String route_operation, String workcenter, String qty, String USER_ID, String contrainer_id,String item_key, String scrap) {
+    public boolean data_tranout(String workorder, String route_operation, String workcenter, String qty, String USER_ID, String contrainer_id,String item_key,
+                                String scrap,String Line_Name,String Qty_Labor) {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
                 query = "INSERT INTO MOBILE_Shopfloor_TranOut(workorder,Route_Operation,Item_Key,WorkCenter,Qty,Trans_Date,Regis_by," +
-                        "Regis_Date,Update_by,Update_Date,contrainer_id)" +
+                        "Regis_Date,Update_by,Update_Date,contrainer_id,Line_Name,Qty_Labor)" +
                         " VALUES ('" + workorder + "','" + route_operation + "','"+ item_key +"','" + workcenter + "','" +
-                        qty + "',GETDATE(),'" + USER_ID + "',GETDATE(),NULL,NULL,'" + contrainer_id + "')";
+                        qty + "',GETDATE(),'" + USER_ID + "',GETDATE(),NULL,NULL,'" + contrainer_id + "','" + Line_Name + "','" + Qty_Labor + "' )";
                 Statement stmt = con.createStatement();
                 stmt.executeQuery(query);
                 return true;
