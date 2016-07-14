@@ -242,6 +242,18 @@ public class SendFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
             if (btnsave) {
+                if (contrainer.equals("")) {
+                    builder.setMessage("กรุณากรอก Conrainer ID");
+                    builder.setPositiveButton("OK", null);
+                    builder.show();
+                    return false;
+                }
+                if (txt_machine.getText().toString().equals("")) {
+                    builder.setMessage("กรุณากรอก Machine ID");
+                    builder.setPositiveButton("OK", null);
+                    builder.show();
+                    return false;
+                }
                 builder.setMessage("Confirm?");
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
@@ -251,18 +263,7 @@ public class SendFragment extends Fragment {
                         sumTranIn = 0;
                         sumTranOut = 0;
                         sumTranResult = 0;
-                        if (contrainer.equals("")) {
-                            builder.setMessage("กรุณากรอก Conrainer ID");
-                            builder.setPositiveButton("OK", null);
-                            builder.show();
-                            return ;
-                        }
-                        if (txt_machine.getText().toString().equals("")) {
-                            builder.setMessage("กรุณากรอก Machine ID");
-                            builder.setPositiveButton("OK", null);
-                            builder.show();
-                            return ;
-                        }
+
                         HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
                         if (resultMobileMaster.get("status_now").equals("9")) {
                             builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
@@ -284,12 +285,12 @@ public class SendFragment extends Fragment {
                                 builder.setMessage("จำนวนเกิน");
                                 builder.setPositiveButton("OK", null);
                                 builder.show();
-                                return ;
+                                return;
                             } else if (sumTranResult == 0) {
                                 builder.setMessage("ส่งครบแล้ว");
                                 builder.setPositiveButton("OK", null);
                                 builder.show();
-                                return ;
+                                return;
                             } else {
                                 if (workcenterNext != null) {
                                     itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);

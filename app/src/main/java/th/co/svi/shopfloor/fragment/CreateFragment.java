@@ -201,11 +201,12 @@ public class CreateFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            builder.setMessage("กรุณากรอก Conrainer ID");
-            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    if (status_insert == 1) {
+            if (status_insert == 1) {
+                builder.setMessage("Confirm?");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
                         insert = new InsertDB();
                         insert.data_master(workorder, route_operation, workcenter,
                                 orderqty, member.getUserID());
@@ -214,16 +215,15 @@ public class CreateFragment extends Fragment {
                         Toast.makeText(getActivity(), "Start complete", Toast.LENGTH_SHORT).show();
                         getActivity().setResult(1);
                         getActivity().finish();
-                    } else {
-                        switcher.showErrorView("Please, input or scan QR Code");
 
                     }
-                }
-            });
-            builder.setNegativeButton("No", null);
-            builder.show();
-            builder.show();
+                });
+                builder.setNegativeButton("No", null);
+                builder.show();
+            } else {
+                switcher.showErrorView("Please, input or scan QR Code");
 
+            }
 
         }
 
