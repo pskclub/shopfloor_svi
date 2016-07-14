@@ -1,6 +1,7 @@
 package th.co.svi.shopfloor.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
@@ -241,75 +242,84 @@ public class SendFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
             if (btnsave) {
-                contrainer = txt_contrainer.getText().toString();
-                outputqty = Integer.parseInt(edt_outputqty.getText().toString());
-                sumTranIn = 0;
-                sumTranOut = 0;
-                sumTranResult = 0;
-                if (contrainer.equals("")) {
-                    builder.setMessage("กรุณากรอก Conrainer ID");
-                    builder.setPositiveButton("OK", null);
-                    builder.show();
-                    return false;
-                }
-                if (txt_machine.getText().toString().equals("")) {
-                    builder.setMessage("กรุณากรอก Machine ID");
-                    builder.setPositiveButton("OK", null);
-                    builder.show();
-                    return false;
-                }
-                HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
-                if (resultMobileMaster.get("status_now").equals("9")) {
-                    builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
-                    builder.setPositiveButton("OK", null);
-                    builder.show();
-                } else {
-                    List<HashMap<String, String>> tranIn = select.tranIn(workorder, operation_act, workcenter);
-                    List<HashMap<String, String>> tranOut = select.tranOut(workorder, operation_act, workcenter);
-                    for (HashMap<String, String> resultx : tranIn) {
-                        sumTranIn = sumTranIn + Integer.parseInt(resultx.get("qty"));
-                    }// END WHILE rs_operation
-                    for (HashMap<String, String> result : tranOut) {
-                        sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
-
-                    }// END WHILE rs_operation
-                    sumTranResult = sumTranIn - sumTranOut;
-                    if (outputqty > sumTranResult) {
-
-                        builder.setMessage("จำนวนเกิน");
-                        builder.setPositiveButton("OK", null);
-                        builder.show();
-                        return false;
-                    } else if (sumTranResult == 0) {
-                        builder.setMessage("ส่งครบแล้ว");
-                        builder.setPositiveButton("OK", null);
-                        builder.show();
-                        return false;
-                    } else {
-                        if (workcenterNext != null) {
-                            itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);
-                            insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty), member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
-                            HashMap<String, String> resultMobileMasternext = select.data_master(workorder, operation_actNext, workcenterNext);
-                            if (resultMobileMasternext.size() == 0) {
-                                insert.data_master(workorder, operation_actNext, workcenterNext, orderqty, member.getUserID());
-                            }
+                builder.setMessage("Confirm?");
+                builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        contrainer = txt_contrainer.getText().toString();
+                        outputqty = Integer.parseInt(edt_outputqty.getText().toString());
+                        sumTranIn = 0;
+                        sumTranOut = 0;
+                        sumTranResult = 0;
+                        if (contrainer.equals("")) {
+                            builder.setMessage("กรุณากรอก Conrainer ID");
+                            builder.setPositiveButton("OK", null);
+                            builder.show();
+                            return ;
                         }
-                        itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
-                        String qty_labor = select.qty_labor(txt_machine.getText().toString());
-                        insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty),
-                                member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0", txt_machine.getText().toString(), qty_labor);
-
-
-                        if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + outputqty))) {
-                            update.dataMaster(workorder, operation_act, workcenter, "9", member.getUserID());
+                        if (txt_machine.getText().toString().equals("")) {
+                            builder.setMessage("กรุณากรอก Machine ID");
+                            builder.setPositiveButton("OK", null);
+                            builder.show();
+                            return ;
+                        }
+                        HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
+                        if (resultMobileMaster.get("status_now").equals("9")) {
+                            builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
+                            builder.setPositiveButton("OK", null);
+                            builder.show();
                         } else {
-                            update.dataMaster(workorder, operation_act, workcenter, "0", member.getUserID());
+                            List<HashMap<String, String>> tranIn = select.tranIn(workorder, operation_act, workcenter);
+                            List<HashMap<String, String>> tranOut = select.tranOut(workorder, operation_act, workcenter);
+                            for (HashMap<String, String> resultx : tranIn) {
+                                sumTranIn = sumTranIn + Integer.parseInt(resultx.get("qty"));
+                            }// END WHILE rs_operation
+                            for (HashMap<String, String> result : tranOut) {
+                                sumTranOut = sumTranOut + Integer.parseInt(result.get("qty"));
+
+                            }// END WHILE rs_operation
+                            sumTranResult = sumTranIn - sumTranOut;
+                            if (outputqty > sumTranResult) {
+
+                                builder.setMessage("จำนวนเกิน");
+                                builder.setPositiveButton("OK", null);
+                                builder.show();
+                                return ;
+                            } else if (sumTranResult == 0) {
+                                builder.setMessage("ส่งครบแล้ว");
+                                builder.setPositiveButton("OK", null);
+                                builder.show();
+                                return ;
+                            } else {
+                                if (workcenterNext != null) {
+                                    itemKeyIn = select.countItemKeyIn(workorder, operation_actNext, workcenterNext);
+                                    insert.data_tranin(workorder, operation_actNext, workcenterNext, String.valueOf(outputqty), member.getUserID(), contrainer, String.valueOf((itemKeyIn + 1)));
+                                    HashMap<String, String> resultMobileMasternext = select.data_master(workorder, operation_actNext, workcenterNext);
+                                    if (resultMobileMasternext.size() == 0) {
+                                        insert.data_master(workorder, operation_actNext, workcenterNext, orderqty, member.getUserID());
+                                    }
+                                }
+                                itemKeyOut = select.countItemKeyOut(workorder, operation_act, member.getUserRoute());
+                                String qty_labor = select.qty_labor(txt_machine.getText().toString());
+                                insert.data_tranout(workorder, operation_act, member.getUserRoute(), String.valueOf(outputqty),
+                                        member.getUserID(), contrainer, String.valueOf((itemKeyOut + 1)), "0", txt_machine.getText().toString(), qty_labor);
+
+
+                                if (resultMobileMaster.get("qty_wo").equals(Integer.toString(sumTranOut + outputqty))) {
+                                    update.dataMaster(workorder, operation_act, workcenter, "9", member.getUserID());
+                                } else {
+                                    update.dataMaster(workorder, operation_act, workcenter, "0", member.getUserID());
+                                }
+                            }
+                            Toast.makeText(getContext(), "Send Success!!", Toast.LENGTH_SHORT).show();
+                            getActivity().setResult(1);
+                            getActivity().finish();
                         }
+
                     }
-                    Toast.makeText(getContext(), "Send Success!!", Toast.LENGTH_SHORT).show();
-                    getActivity().setResult(1);
-                    getActivity().finish();
-                }
+                });
+                builder.setNegativeButton("No", null);
+                builder.show();
 
             } else {
                 builder.setMessage("can't Start");

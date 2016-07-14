@@ -1,6 +1,7 @@
 package th.co.svi.shopfloor.fragment;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.AsyncTask;
@@ -200,19 +201,29 @@ public class CreateFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
-            if (status_insert == 1) {
-                insert = new InsertDB();
-                insert.data_master(workorder, route_operation, workcenter,
-                        orderqty, member.getUserID());
-                insert.data_tranin(workorder, dataOperationResult.get("route_operation"),
-                        workcenter, orderqty, member.getUserID(), "-1", "1");
-                Toast.makeText(getActivity(), "Start complete", Toast.LENGTH_SHORT).show();
-                getActivity().setResult(1);
-                getActivity().finish();
-            } else {
-                switcher.showErrorView("Please, input or scan QR Code");
+            builder.setMessage("กรุณากรอก Conrainer ID");
+            builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    if (status_insert == 1) {
+                        insert = new InsertDB();
+                        insert.data_master(workorder, route_operation, workcenter,
+                                orderqty, member.getUserID());
+                        insert.data_tranin(workorder, dataOperationResult.get("route_operation"),
+                                workcenter, orderqty, member.getUserID(), "-1", "1");
+                        Toast.makeText(getActivity(), "Start complete", Toast.LENGTH_SHORT).show();
+                        getActivity().setResult(1);
+                        getActivity().finish();
+                    } else {
+                        switcher.showErrorView("Please, input or scan QR Code");
 
-            }
+                    }
+                }
+            });
+            builder.setNegativeButton("No", null);
+            builder.show();
+            builder.show();
+
 
         }
 
