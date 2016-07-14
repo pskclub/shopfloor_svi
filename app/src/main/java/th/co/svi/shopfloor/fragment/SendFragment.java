@@ -242,8 +242,13 @@ public class SendFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1) {
             if (btnsave) {
+                contrainer = txt_contrainer.getText().toString();
+                outputqty = Integer.parseInt(edt_outputqty.getText().toString());
+                sumTranIn = 0;
+                sumTranOut = 0;
+                sumTranResult = 0;
                 if (contrainer.equals("")) {
-                    builder.setMessage("กรุณากรอก Conrainer ID");
+                    builder.setMessage("Please enter Handling ID");
                     builder.setPositiveButton("OK", null);
                     builder.show();
                     return false;
@@ -258,15 +263,11 @@ public class SendFragment extends Fragment {
                 builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        contrainer = txt_contrainer.getText().toString();
-                        outputqty = Integer.parseInt(edt_outputqty.getText().toString());
-                        sumTranIn = 0;
-                        sumTranOut = 0;
-                        sumTranResult = 0;
+
 
                         HashMap<String, String> resultMobileMaster = select.data_master(workorder, operation_act, workcenter);
                         if (resultMobileMaster.get("status_now").equals("9")) {
-                            builder.setMessage("งานนี้ทำเสร็จอยู่แล้ว ไม่สามารถส่งได้");
+                            builder.setMessage("This Job is already done");
                             builder.setPositiveButton("OK", null);
                             builder.show();
                         } else {
