@@ -38,4 +38,8 @@ public class ShareData {
     public String getUserRoute() {
         return member.getString("user_route", "");
     }
+
+    public int getUserSize() {
+        return member.getInt("user_size", 0);
+    }
 }

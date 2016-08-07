@@ -1,5 +1,6 @@
 package th.co.svi.shopfloor.activity;
 
+import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,9 +16,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import th.co.svi.shopfloor.R;
+import th.co.svi.shopfloor.adapter.JobPendingAdapter;
+import th.co.svi.shopfloor.adapter.UserListAdapter;
 import th.co.svi.shopfloor.adapter.ViewPagerAdapter;
 import th.co.svi.shopfloor.bus.ResultBus;
 import th.co.svi.shopfloor.event.ActivityResultEvent;
@@ -46,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
         if (shareMember.getUserRoute().equals("MANAGER")) {
             displayViewManager(savedInstanceState);
         } else if (shareMember.getUserRoute().equals("CMC1") ||
-                shareMember.getUserRoute().equals( "CMS1") ||
+                shareMember.getUserRoute().equals("CMS1") ||
                 shareMember.getUserRoute().equals("SMT1")) {
             displayViewPendingAndPlan();
         } else {
@@ -145,7 +153,40 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1 || item.getItemId() == 9) {
-            Toast.makeText(this, "ID : " + shareMember.getUserID() + " | Name : " + shareMember.getUsername() + " | Route : " + shareMember.getUserRoute(), Toast.LENGTH_SHORT).show();
+            final Dialog dialog = new Dialog(this);
+            dialog.setContentView(R.layout.swich_user_dialog);
+            Button btnAddUser = (Button) dialog.findViewById(R.id.btnAddUser);
+            Button btnCancle = (Button) dialog.findViewById(R.id.btnCancle);
+            TextView txtUser = (TextView) dialog.findViewById(R.id.txtUser);
+            ListView lvUser = (ListView) dialog.findViewById(R.id.lvUser);
+
+            UserListAdapter userAdapter = new UserListAdapter(null);
+            lvUser.setAdapter(userAdapter);
+
+            txtUser.setText("ID : " + shareMember.getUserID() + " | Name : " + shareMember.getUsername() + " | Route : " + shareMember.getUserRoute());
+            dialog.show();
+
+            btnCancle.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dialog.cancel();
+                }
+            });
+            btnAddUser.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent i = new Intent(MainActivity.this, AddLoginActivity.class);
+                    startActivityForResult(i, 9);
+                }
+            });
+
+            lvUser.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+                    dialog.cancel();
+                }
+            });
         }
         if (item.getItemId() == 2) {
             AlertDialog.Builder builder =
@@ -155,7 +196,7 @@ public class MainActivity extends AppCompatActivity {
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
                     InsertDB insert = new InsertDB();
-                    insert.log_user(shareMember.getUserID(),"Authentication","logout");
+                    insert.log_user(shareMember.getUserID(), "Authentication", "logout");
                     shareMember.setMember(false, shareMember.getUsername(), "", "");
                     Intent i = new Intent(MainActivity.this, LoginActivity.class);
                     startActivity(i);

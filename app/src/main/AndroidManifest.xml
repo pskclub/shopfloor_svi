@@ -32,6 +32,7 @@
             android:value="f12b6520c3e3adeea306654abc6376206bb7b147" />
 
         <activity android:name=".activity.SendActivity"  android:windowSoftInputMode="stateHidden" />
+        <activity android:name=".activity.AddLoginActivity"   android:theme="@style/AddAppTheme.login" />
         <activity android:name=".activity.CaptureActivity"  android:windowSoftInputMode="stateHidden" />
     </application>
 
