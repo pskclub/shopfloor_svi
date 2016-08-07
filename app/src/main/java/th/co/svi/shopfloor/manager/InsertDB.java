@@ -63,6 +63,25 @@ public class InsertDB {
         return false;
     }
 
+    public boolean log_user(String user_id, String status, String msg) {
+        try {
+            Connection con = ConnectionClass.CONN();
+            if (con != null) {
+                query = "INSERT INTO log_user(user_id,status,msg,created_at) VALUES ('" + user_id + "','" + status + "','" + msg + "','GETDATE()')";
+                Statement stmt = con.createStatement();
+                stmt.executeQuery(query);
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            Log.e("DbSelErr", e.getMessage());
+        } catch (NullPointerException e) {
+            Log.e("DbSelNull", e.getMessage());
+        }
+        return false;
+    }
+
     public boolean data_tranout(String workorder, String route_operation, String workcenter, String qty, String USER_ID, String contrainer_id,String item_key,
                                 String scrap,String Line_Name,String Qty_Labor) {
         try {

@@ -24,6 +24,7 @@ import th.co.svi.shopfloor.event.ActivityResultEvent;
 import th.co.svi.shopfloor.fragment.ContrainerSearchFragment;
 import th.co.svi.shopfloor.fragment.PendingFragment;
 import th.co.svi.shopfloor.fragment.PlanFragment;
+import th.co.svi.shopfloor.manager.InsertDB;
 import th.co.svi.shopfloor.manager.ShareData;
 
 public class MainActivity extends AppCompatActivity {
@@ -153,6 +154,8 @@ public class MainActivity extends AppCompatActivity {
             builder.setMessage("Are you sure you want to sign out ?");
             builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int which) {
+                    InsertDB insert = new InsertDB();
+                    insert.log_user(shareMember.getUserID(),"Authentication","logout");
                     shareMember.setMember(false, shareMember.getUsername(), "", "");
                     Intent i = new Intent(MainActivity.this, LoginActivity.class);
                     startActivity(i);
