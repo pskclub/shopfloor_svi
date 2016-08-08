@@ -37,6 +37,7 @@ public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
             result = checkLogin.checkLogin(mUsername, mPassword);
             if (result.get("status").equals(SUCCESS)) {
                 shareMember.setMember(true, mUsername, result.get("ID"), result.get("route"));
+                shareMember.addMember(mUsername, result.get("ID"), result.get("route"));
                 InsertDB insert = new InsertDB();
                 insert.log_user(result.get("ID"),"Authentication","Login");
                 return true;

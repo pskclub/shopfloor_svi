@@ -25,8 +25,7 @@ public class UserListAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-//        return (Data == null) ? 0 : Data.size();
-        return 5;
+        return (Data == null) ? 0 : Data.size();
     }
 
     @Override
@@ -49,8 +48,7 @@ public class UserListAdapter extends BaseAdapter {
 
         }
 
-        item.setData("fdsfsdfsdfsdfsdfsd" + i);
-//        item.setData(Data.get(i).get("name"));
+        item.setData("ID : " + Data.get(i).get("user_id") + " | Name : " + Data.get(i).get("username") + " | Route : " + Data.get(i).get("user_route"));
         return item;
     }
 }

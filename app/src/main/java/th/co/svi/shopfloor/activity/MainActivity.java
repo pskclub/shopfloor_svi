@@ -23,6 +23,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.HashMap;
+import java.util.List;
+
 import th.co.svi.shopfloor.R;
 import th.co.svi.shopfloor.adapter.JobPendingAdapter;
 import th.co.svi.shopfloor.adapter.UserListAdapter;
@@ -41,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private ViewPager viewPager;
     ViewPagerAdapter pageAdapter;
     ShareData shareMember;
-
+    private List<HashMap<String, String>> userList = null;
     private Boolean isFabOpen = false;
     private FloatingActionButton fabMenu, fabSend, fabCreate;
     private Animation fab_open, fab_close, rotate_forward, rotate_backward;
@@ -153,14 +156,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1 || item.getItemId() == 9) {
+            userList = null;
+            //add user
             final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.swich_user_dialog);
             Button btnAddUser = (Button) dialog.findViewById(R.id.btnAddUser);
             Button btnCancle = (Button) dialog.findViewById(R.id.btnCancle);
             TextView txtUser = (TextView) dialog.findViewById(R.id.txtUser);
             ListView lvUser = (ListView) dialog.findViewById(R.id.lvUser);
-
-            UserListAdapter userAdapter = new UserListAdapter(null);
+            for (int i = 1; i <= shareMember.getUserSize(); i++) {
+                userList.add(shareMember.getMember(i));
+            }
+            UserListAdapter userAdapter = new UserListAdapter(userList);
             lvUser.setAdapter(userAdapter);
 
             txtUser.setText("ID : " + shareMember.getUserID() + " | Name : " + shareMember.getUsername() + " | Route : " + shareMember.getUserRoute());
@@ -183,8 +190,17 @@ public class MainActivity extends AppCompatActivity {
             lvUser.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    Toast.makeText(MainActivity.this, "" + position, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "switch to " + userList.get(position).get("username"), Toast.LENGTH_SHORT).show();
+                    shareMember.setMember(
+                            true,
+                            userList.get(position).get("username"),
+                            userList.get(position).get("user_id"),
+                            userList.get(position).get("user_route")
+                    );
                     dialog.cancel();
+                    Intent i = new Intent(MainActivity.this, MainActivity.class);
+                    startActivity(i);
+                    finish();
                 }
             });
         }
@@ -197,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     InsertDB insert = new InsertDB();
                     insert.log_user(shareMember.getUserID(), "Authentication", "logout");
-                    shareMember.setMember(false, shareMember.getUsername(), "", "");
+                    shareMember.logOut();
                     Intent i = new Intent(MainActivity.this, LoginActivity.class);
                     startActivity(i);
                     finish();

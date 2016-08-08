@@ -50,6 +50,7 @@ public class AddLoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setTitle("Add User");
         getSupportActionBar().setHomeButtonEnabled(true);
         initInstances();
         txtPassword.setOnEditorActionListener(textViewEditerListener);
