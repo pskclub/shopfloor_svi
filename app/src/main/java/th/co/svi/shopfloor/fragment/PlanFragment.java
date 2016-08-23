@@ -171,7 +171,7 @@ public class PlanFragment extends Fragment {
             txtDate = (year + "-" + month + "-" + day);
             txtDateTo = (year + "-" + month + "-" + (day + 1));
             mDay = day;
-            mMonth = month - 1;
+            mMonth = month;
             mYear = year;
             invalidateOptionsMenu(getActivity());
             tvDate.setText(txtDate);

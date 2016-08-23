@@ -67,7 +67,7 @@ public class InsertDB {
         try {
             Connection con = ConnectionClass.CONN();
             if (con != null) {
-                query = "INSERT INTO log_user(user_id,status,msg,created_at) VALUES ('" + user_id + "','" + status + "','" + msg + "','GETDATE()')";
+                query = "INSERT INTO log_user(user_id,status,msg,created_at) VALUES ('" + user_id + "','" + status + "','" + msg + "',GETDATE())";
                 Statement stmt = con.createStatement();
                 stmt.executeQuery(query);
                 return true;
