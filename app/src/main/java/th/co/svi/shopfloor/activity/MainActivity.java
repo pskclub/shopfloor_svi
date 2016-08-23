@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -147,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         menu.add(1, 1, 4, shareMember.getUsername().toUpperCase() +
-                " | " + shareMember.getUserRoute()).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+                " | "+ shareMember.getUserRoute()).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         menu.add(1, 2, 5, "Sign Out").setIcon(R.drawable.ic_power_settings_new_white_24dp).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         return true;
     }
@@ -156,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1 || item.getItemId() == 9) {
-            userList = null;
+            userList = new ArrayList<>();;
             //add user
             final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.swich_user_dialog);
