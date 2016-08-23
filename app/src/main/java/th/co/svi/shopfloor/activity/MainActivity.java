@@ -18,7 +18,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -28,7 +27,6 @@ import java.util.HashMap;
 import java.util.List;
 
 import th.co.svi.shopfloor.R;
-import th.co.svi.shopfloor.adapter.JobPendingAdapter;
 import th.co.svi.shopfloor.adapter.UserListAdapter;
 import th.co.svi.shopfloor.adapter.ViewPagerAdapter;
 import th.co.svi.shopfloor.bus.ResultBus;
@@ -157,7 +155,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == 1 || item.getItemId() == 9) {
-            userList = new ArrayList<>();;
+            userList = new ArrayList<>();
             //add user
             final Dialog dialog = new Dialog(this);
             dialog.setContentView(R.layout.swich_user_dialog);
